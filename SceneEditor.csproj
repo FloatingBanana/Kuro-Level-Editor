@@ -24,13 +24,13 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ImGuiNET">
-      <HintPath>..\deps\imgui\ImGui.NET.dll</HintPath>
+      <HintPath>deps\ImGui.NET.dll</HintPath>
     </Reference>
     <Reference Include="ImGuizmoNET">
-      <HintPath>..\deps\imguizmo\ImGuizmo.NET.dll</HintPath>
+      <HintPath>deps\ImGuizmo.NET.dll</HintPath>
     </Reference>
-    <Content Include="../deps/imgui/cimgui.dll" CopyToOutputDirectory="Always" Link="cimgui.dll" />
-    <Content Include="../deps/imguizmo/cimguizmo.dll" CopyToOutputDirectory="Always" Link="cimguizmo.dll" />
+    <Content Include="deps/cimgui.dll" CopyToOutputDirectory="Always" Link="cimgui.dll" />
+    <Content Include="deps/cimguizmo.dll" CopyToOutputDirectory="Always" Link="cimguizmo.dll" />
   </ItemGroup>
   <ItemGroup>
     <TrimmerRootAssembly Include="Microsoft.Xna.Framework.Content.ContentTypeReader" Visible="false" />
