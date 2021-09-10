@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -9,30 +10,28 @@ using MonoGame.Extended.Input;
 namespace SceneEditor.Resources {
     // TODO: Find a better way to manage contents
     static class ResourceManager {
+        public static Dictionary<string, Resource> resources = new Dictionary<string, Resource>();
 
-        public static Dictionary<string, object> resources = new Dictionary<string, object>();
-
-        public static void AddResource(string name, object resource) {
+        public static void AddResource(string name, Resource resource) {
             resources.Add(name, resource);
         }
-        public static void AddResource(IEnumerable<(string, object)> resources) {
+        public static void AddResource(IEnumerable<(string, Resource)> resources) {
             foreach (var resource in resources)
                 AddResource(resource.Item1, resource.Item2);
         }
 
-        public static void LoadResource(string name, string filename) {
-            AddResource(name, MainGame.Instance.Content.Load<object>(filename));
-        }
-        public static void LoadResource(IEnumerable<(string, string)> resources) {
-            foreach (var resource in resources)
-                LoadResource(resource.Item1, resource.Item2);
-        }
-
-        public static object GetResource(string name) {
+        public static Resource GetResource(string name) {
             return resources[name];
         }
-        public static T GetResource<T>(string name) {
-            return resources[name] is T ? (T)resources[name] : default(T);
+
+        public static void RemoveResource(string name) {
+            resources.Remove(name, out var currResource);
+
+            foreach (var resource in resources) {
+                if (resource.Value.Parent == currResource) {
+                    RemoveResource(resource.Key);
+                }
+            }
         }
 
         public static Dictionary<string, T> FilterResources<T>() {
@@ -48,47 +47,57 @@ namespace SceneEditor.Resources {
     }
 
     /// <summary>A wrapper around a external resource</summary>
-    abstract class Resource : IDisposable {
-        private Resource _parent;
-        public Resource parent {
-            get => _parent;
-            protected set {
-                if (_parent != null)
-                    _parent.OnRemove -= _selfRemove;
-                
-                if ((_parent = value) != null) {
-                    _parent.OnRemove += _selfRemove;
-                }
-            }
-        }
-
-        public object RawResource {get; protected set;}
-
-        public Resource(object res, Resource parent = null) {
-            RawResource = res;
-            this.parent = parent;
-        }
-
-        public abstract void Dispose();
-        private void _selfRemove(Resource sender) {
-
-        }
+    abstract class Resource {
+        public Resource Parent {get; set;}
+        public abstract object RawResource {get; set;}
 
         public event Action<Resource> OnRemove;
     }
 
+
+
     class ModelResource : Resource {
-        public Model model {
-            get => RawResource as Model;
-            set => RawResource = value;
+        public Model Model {get; private set;}
+        
+        public override object RawResource {
+            get => Model;
+            set => Model = (Model)value;
         }
 
-        public ModelResource(Model model) : base(model) {
-            
+        public ModelResource(Model model) {
+            Model = model;
+
+            foreach (var mesh in model.Meshes) {
+                var meshRes = new MeshResource(mesh);
+
+                meshRes.Parent = this;
+                ResourceManager.AddResource(mesh.Name, meshRes);
+            }
         }
 
-        public override void Dispose() {
+        public ModelResource(string name) : this(MainGame.Instance.Content.Load<Model>(name)) {}
+    }
 
+    class MeshResource : Resource {
+        public Tuple<Vector3, Vector3, Vector3>[] triangles {get; private set;}
+
+        private ModelMesh _mesh;
+        public ModelMesh Mesh {
+            get => _mesh;
+            private set {
+                _mesh = value;
+                triangles = value.GetTriangles();
+            }
+        }
+
+
+        public override object RawResource {
+            get => Mesh;
+            set => Mesh = (ModelMesh)value;
+        }
+    
+        public MeshResource(ModelMesh mesh) {
+            Mesh = mesh;
         }
     }
 }

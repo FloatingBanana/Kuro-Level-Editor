@@ -60,16 +60,16 @@ namespace SceneEditor {
 
 
             // Test object
-            ResourceManager.LoadResource("drawer", "drawer");
-            var mesh = ResourceManager.GetResource<Model>("drawer").Meshes[0];
+            ResourceManager.AddResource("drawer", new ModelResource("drawer"));
+            var meshRes = ResourceManager.GetResource("Cube") as MeshResource;
 
             var entity = EntityManager.AddEntity("Entity");
             entity.AttachComponent(new Component[] {
                 new Transform() {
-                    TransformationMatrix = mesh.ParentBone.Transform
+                    TransformationMatrix = meshRes.Mesh.ParentBone.Transform
                 },
                 new MeshRenderer() {
-                    Mesh = mesh
+                    MeshRes = meshRes
                 }
             });
         }

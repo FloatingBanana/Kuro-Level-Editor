@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using SceneEditor.Resources;
 
 namespace SceneEditor.EntitySystem {
     class InternalComponentField : ComponentFieldBase {
@@ -119,21 +120,12 @@ namespace SceneEditor.EntitySystem {
 
     [Category("Rendering")]
     class MeshRenderer : InternalComponent, IHoverable {
-        private Tuple<Vector3, Vector3, Vector3>[] triangles;
-
-        ModelMesh _mesh;
-        public ModelMesh Mesh {
-            get => _mesh;
-            set {
-                _mesh = value;
-                triangles = Mesh?.GetTriangles();
-            }
-        }
+        public MeshResource MeshRes {get; set;}
 
         public PlaneIntersectionType intersection = PlaneIntersectionType.Front;
 
         public override void EditorRender(GameTime gameTime, Matrix view, Matrix projection) {
-            foreach (BasicEffect effect in Mesh.Effects) {
+            foreach (BasicEffect effect in MeshRes.Mesh.Effects) {
                 effect.EnableDefaultLighting();
                 effect.PreferPerPixelLighting = true;
                 effect.Alpha = 1;
@@ -143,7 +135,7 @@ namespace SceneEditor.EntitySystem {
                 effect.World = entity.transform.TransformationMatrix;
             }
 
-            Mesh.Draw();
+            MeshRes.Mesh.Draw();
         }
     
         public bool IsHovered(Matrix view, Matrix projection, Vector2 mousePos) {
@@ -159,7 +151,7 @@ namespace SceneEditor.EntitySystem {
             Vector3 dir = Vector3.Normalize(farMouse - nearMouse);
             Ray ray = new Ray(nearMouse, dir);
 
-            foreach (var triangle in triangles) {
+            foreach (var triangle in MeshRes.triangles) {
                 var v1 = Vector3.Transform(triangle.Item1, world);
                 var v2 = Vector3.Transform(triangle.Item2, world);
                 var v3 = Vector3.Transform(triangle.Item3, world);
