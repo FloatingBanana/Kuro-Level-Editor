@@ -120,12 +120,12 @@ namespace SceneEditor.EntitySystem {
 
     [Category("Rendering")]
     class MeshRenderer : InternalComponent, IHoverable {
-        public MeshResource MeshRes {get; set;}
+        public MeshResource Mesh {get; set;}
 
         public PlaneIntersectionType intersection = PlaneIntersectionType.Front;
 
         public override void EditorRender(GameTime gameTime, Matrix view, Matrix projection) {
-            foreach (BasicEffect effect in MeshRes.Mesh.Effects) {
+            foreach (BasicEffect effect in Mesh.Mesh.Effects) {
                 effect.EnableDefaultLighting();
                 effect.PreferPerPixelLighting = true;
                 effect.Alpha = 1;
@@ -135,7 +135,7 @@ namespace SceneEditor.EntitySystem {
                 effect.World = entity.transform.TransformationMatrix;
             }
 
-            MeshRes.Mesh.Draw();
+            Mesh.Mesh.Draw();
         }
     
         public bool IsHovered(Matrix view, Matrix projection, Vector2 mousePos) {
@@ -151,7 +151,7 @@ namespace SceneEditor.EntitySystem {
             Vector3 dir = Vector3.Normalize(farMouse - nearMouse);
             Ray ray = new Ray(nearMouse, dir);
 
-            foreach (var triangle in MeshRes.triangles) {
+            foreach (var triangle in Mesh.triangles) {
                 var v1 = Vector3.Transform(triangle.Item1, world);
                 var v2 = Vector3.Transform(triangle.Item2, world);
                 var v3 = Vector3.Transform(triangle.Item3, world);

@@ -69,7 +69,7 @@ namespace SceneEditor {
                     TransformationMatrix = meshRes.Mesh.ParentBone.Transform
                 },
                 new MeshRenderer() {
-                    MeshRes = meshRes
+                    Mesh = meshRes
                 }
             });
         }

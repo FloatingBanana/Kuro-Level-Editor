@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -14,6 +13,7 @@ namespace SceneEditor.Resources {
 
         public static void AddResource(string name, Resource resource) {
             resources.Add(name, resource);
+            resource.Name = name;
         }
         public static void AddResource(IEnumerable<(string, Resource)> resources) {
             foreach (var resource in resources)
@@ -48,10 +48,22 @@ namespace SceneEditor.Resources {
 
     /// <summary>A wrapper around a external resource</summary>
     abstract class Resource {
+        private Dictionary<string, Resource> resources => ResourceManager.resources;
+
         public Resource Parent {get; set;}
         public abstract object RawResource {get; set;}
 
-        public event Action<Resource> OnRemove;
+        private string _name;
+        public string Name {
+            get => _name;
+            set {
+                if (_name != null)
+                    resources.Remove(_name);
+                
+                resources[value] = this;
+                _name = value;
+            }
+        }
     }
 
 

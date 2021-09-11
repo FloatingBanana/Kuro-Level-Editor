@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Input;
 using ImGuiNET;
 using ImGuizmoNET;
 using SceneEditor.EntitySystem;
+using SceneEditor.Resources;
 
 using SNVector2 = System.Numerics.Vector2;
 
@@ -137,6 +138,12 @@ namespace SceneEditor {
                 }
             }
 
+            else if (type == typeof(Resource) || typeof(Resource).IsAssignableFrom(type)) {
+                string label = (field.Value == null ? "None" : (field.Value as Resource).Name) + $" ({type.Name})";
+                
+                ImGui.Button(label, new SNVector2(-float.Epsilon, 20));
+            }
+
             ImGui.PopItemWidth();
 
             if (type == typeof(bool)) {
@@ -145,73 +152,6 @@ namespace SceneEditor {
                 if (ImGui.Checkbox("", ref check)) {
                     field.Value = check;
                 }
-            }
-
-            // else if (type.IsArray) {
-            //     var arr = (Array)field.Value;
-                
-            //     if (ImGui.TreeNode("")) {
-            //         ImGui.Text("Count: " + arr.Length);
-                    
-            //         for (int i=0; i < arr.Length; i++) {
-            //             object arrValue = arr.GetValue(i);
-
-            //             RenderValueEditor("Element " + i, type, ref arrValue, disabled);
-
-            //             arr.SetValue(arrValue, i);
-            //         }
-            //     }
-            // }
-
-            // else if (type == typeof(List<>)) {
-            //     var list = (List<object>)field.Value;
-                
-            //     if (ImGui.TreeNode("")) {
-            //         ImGui.Text("Count: " + list.Capacity);
-            //         ImGui.SameLine();
-
-            //         int capacity = list.Capacity;
-            //         ImGui.InputInt("", ref capacity);
-            //         list.Capacity = capacity;
-                    
-            //         for (int i=0; i < capacity; i++) {
-            //             object val = list[i];
-            //             RenderValueEditor("Element " + i, type, ref val, disabled);
-            //             list[i] = val;
-            //         }
-            //     }
-            // }
-
-            else {
-                // if (ImGui.TreeNode(name)) {
-                //     RenderMembers(type, value);
-
-                //     ImGui.TreePop();
-                // }
-
-                // if (value == null) {
-                //     ImGui.Button($"Empty ({type.Name})");
-                // }
-                // else {
-                //     ImGui.Button(value.ToString());
-                // }
-
-                // if (ImGui.BeginDragDropSource()) {
-                //     if (ImGui.SetDragDropPayload("DND_VALUE_DRAG", new IntPtr(2), sizeof(int)))
-                //         dragging = value;
-
-                //     ImGui.Text(value.ToString());
-                //     ImGui.EndDragDropSource();
-                // }
-                
-                // if (ImGui.BeginDragDropTarget()) {
-                //     var payload = ImGui.AcceptDragDropPayload("DND_VALUE_DRAG");
-
-                //     if (payload.DataSize == sizeof(int)) {
-                //         value = dragging;
-                //         dragging = null;
-                //     }
-                // }
             }
 
             ImGui.PopID();

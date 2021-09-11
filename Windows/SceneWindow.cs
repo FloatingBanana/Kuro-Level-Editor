@@ -238,7 +238,7 @@ namespace SceneEditor {
 
 		// Commands
 		private void _moveToEntity(Entity entity) {
-			var mesh = entity.GetComponent<MeshRenderer>()?.MeshRes?.Mesh;
+			var mesh = entity.GetComponent<MeshRenderer>()?.Mesh?.Mesh;
 			float dist = 5f;
 
 			if (mesh != null) {
