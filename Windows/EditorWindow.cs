@@ -9,6 +9,8 @@ using SNVector2 = System.Numerics.Vector2;
 
 namespace SceneEditor {
     class EditorWindow {
+        protected const float GUI_FILL = -float.Epsilon;
+        
         public Rectangle windowRect {get; private set;}
         public bool isOpen = true;
 

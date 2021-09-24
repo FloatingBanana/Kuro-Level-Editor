@@ -15,6 +15,9 @@ namespace SceneEditor {
     public class MainGame : Game {
         public static MainGame Instance {get; private set;}
 
+        public Texture2D blankTexture;
+        public IntPtr blankTextureHandle;
+
         // Managers
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
@@ -57,21 +60,21 @@ namespace SceneEditor {
             windows.Add(new SceneWindow());
             windows.Add(new ComponentsWindow());
             windows.Add(new HierarchyWindow());
+            windows.Add(new ResourceWindow());
 
+
+            ResourceManager.AddResource("room", new ModelResource("room"));
 
             // Test object
-            ResourceManager.AddResource("drawer", new ModelResource("drawer"));
-            var meshRes = ResourceManager.GetResource("Cube") as MeshResource;
-
             var entity = EntityManager.AddEntity("Entity");
-            entity.AttachComponent(new Component[] {
-                new Transform() {
-                    TransformationMatrix = meshRes.Mesh.ParentBone.Transform
-                },
-                new MeshRenderer() {
-                    Mesh = meshRes
-                }
-            });
+            var meshRenderer = new MeshRenderer();
+            entity.AttachComponent(meshRenderer);
+
+            meshRenderer.Mesh = ResourceManager.GetResource("drawer") as MeshResource;
+
+            blankTexture = new Texture2D(GraphicsDevice, 1, 1);
+            blankTexture.SetData(new[] {Color.Transparent});
+            blankTextureHandle = imguiRenderer.BindTexture(blankTexture);
         }
 
         protected override void Update(GameTime gameTime) {
@@ -119,6 +122,8 @@ namespace SceneEditor {
             foreach (var window in windows) {
                 window.Close();
             }
+
+            blankTexture.Dispose();
         }
 
 
