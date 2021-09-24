@@ -120,11 +120,22 @@ namespace SceneEditor.EntitySystem {
 
     [Category("Rendering")]
     class MeshRenderer : InternalComponent, IHoverable {
-        public MeshResource Mesh {get; set;}
+        private MeshResource _mesh;
+        public MeshResource Mesh {
+            get => _mesh;
+            set {
+                if ((_mesh = value) != null) {
+                    Matrix transformation = _mesh.Mesh.ParentBone.ModelTransform;
+                    transformation.Translation = entity.transform.Position;
 
-        public PlaneIntersectionType intersection = PlaneIntersectionType.Front;
+                    entity.transform.TransformationMatrix = transformation;
+                }
+            }
+        }
 
         public override void EditorRender(GameTime gameTime, Matrix view, Matrix projection) {
+            if (Mesh == null) return;
+
             foreach (BasicEffect effect in Mesh.Mesh.Effects) {
                 effect.EnableDefaultLighting();
                 effect.PreferPerPixelLighting = true;
@@ -139,12 +150,11 @@ namespace SceneEditor.EntitySystem {
         }
     
         public bool IsHovered(Matrix view, Matrix projection, Vector2 mousePos) {
+            if (Mesh == null) return false;
+
             Matrix world = entity.transform.TransformationMatrix;
             Viewport vp = MainGame.Instance.GraphicsDevice.Viewport;
 
-            // REVIEW: Viewport.Unproject creates the inverse of view and projection matrix,
-            //         which is a expensive operation. Calling it twice is a waste, I could
-            //         just pre-calculate the inverses and then transform the points manually.
             Vector3 nearMouse = vp.Unproject(new Vector3(mousePos, 0), projection, view, Matrix.Identity);
             Vector3 farMouse = vp.Unproject(new Vector3(mousePos, 1), projection, view, Matrix.Identity);
 
