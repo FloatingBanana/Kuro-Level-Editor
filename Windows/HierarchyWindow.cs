@@ -1,18 +1,11 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using ImGuiNET;
-using ImGuizmoNET;
 using SceneEditor.EntitySystem;
-
-using SNVector2 = System.Numerics.Vector2;
 
 namespace SceneEditor {
     class HierarchyWindow : EditorWindow {
-
-
         public HierarchyWindow() {
             
         }
@@ -39,14 +32,6 @@ namespace SceneEditor {
                     }
                 }
             }
-        }
-
-        public override void Update(GameTime gameTime) {
-            
-        }
-
-        public override void Close() {
-            
         }
 
     }

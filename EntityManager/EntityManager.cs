@@ -17,12 +17,23 @@ namespace SceneEditor.EntitySystem {
                 }
             }
         }
-        public static void Render(GameTime gameTime, Matrix view, Matrix projection) {
+
+        public static void Render(GameTime gameTime, Matrix view, Matrix projection, bool backfaceCulling, bool wireframe) {
             var gd = MainGame.Instance.GraphicsDevice;
+
+            var cullMode = backfaceCulling ? CullMode.CullCounterClockwiseFace : CullMode.None;
+            var fillMode = wireframe ? FillMode.WireFrame : FillMode.Solid;
+
+            // No need to create this every frame
+            if (cullMode != gd.RasterizerState.CullMode || fillMode != gd.RasterizerState.FillMode) {
+                gd.RasterizerState = new RasterizerState() {
+                    CullMode = cullMode,
+                    FillMode = fillMode,
+                };
+            }
 
             gd.DepthStencilState = DepthStencilState.Default;
             gd.BlendState = BlendState.Opaque;
-            gd.RasterizerState = RasterizerState.CullCounterClockwise;
             gd.SamplerStates[0] = SamplerState.LinearWrap;
 
             foreach (Entity entity in entities) {
@@ -82,6 +93,7 @@ namespace SceneEditor.EntitySystem {
 
         public Entity(string name) {
             this.name = name;
+            this.AttachComponent(new Transform());
         }
 
         public T GetComponent<T>() where T : class {

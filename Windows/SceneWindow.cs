@@ -18,22 +18,21 @@ namespace SceneEditor {
 	}
 
 	class SceneWindow : EditorWindow {
-		// View manipulation
-		private Point previousMousePos;
+		// Manipulation
 		private ViewManipulationMode manipulationMode = ViewManipulationMode.None;
-
-		//Gizmos
 		public OPERATION gizmoOperation = OPERATION.TRANSLATE;
 		public MODE gizmoMode = MODE.LOCAL;
-
 
 		// Scene camera
 		public Matrix viewMatrix = Matrix.Identity;
 		public Matrix projectionMatrix = Matrix.Identity;
+
 		private Vector3 cameraPos = new Vector3(0, 0, 15);
 		private Quaternion cameraRotation = Quaternion.Identity;
 		private Vector3 cameraRotationEuler = new Vector3(0, 0, 0);
 
+		private bool backfaceCulling = true;
+		private bool wireframe = false;
 		private bool isPerspectiveProjection = true;
 		private float viewFov = MathF.PI/4f;
 
@@ -42,8 +41,6 @@ namespace SceneEditor {
 		private IntPtr renderTargetHandle;
 
 		public SceneWindow() {
-			projectionMatrix = Matrix.CreatePerspectiveFieldOfView(viewFov, graphicsDevice.Viewport.AspectRatio, 0.01f, 100f);
-
 			renderTarget = new RenderTarget2D(graphicsDevice, graphicsDevice.Viewport.Width, graphicsDevice.Viewport.Height, false, SurfaceFormat.Color, DepthFormat.Depth24);
 			renderTargetHandle = game.imguiRenderer.BindTexture(renderTarget);
 		}
@@ -53,47 +50,46 @@ namespace SceneEditor {
 
 			ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, SNVector2.Zero);
 
-			if (ImGui.Begin("Scene", ref isOpen, ImGuiWindowFlags.MenuBar)) {
-
+			if (ImGui.Begin("Scene###" + this.GetHashCode(), ref isOpen, ImGuiWindowFlags.MenuBar)) {
 				_renderToolbar();
 
 				SNVector2 windowPos = ImGui.GetWindowPos();
 				SNVector2 avail = ImGui.GetContentRegionAvail();
 				SNVector2 origin = ImGui.GetCursorPos();
 
-				ImGui.BeginChild("prevent_drag", avail, false, ImGuiWindowFlags.NoMove);
+				if (ImGui.BeginChild("prevent_drag", avail, false, ImGuiWindowFlags.NoMove)) {
+					// Editor view
+					_renderSceneView(gameTime);
+					ImGui.Image(renderTargetHandle, avail);
+					
+					#region Gizmo
+					// Configure gizmo
+					ImGuizmo.SetID(this.GetHashCode());
+					ImGuizmo.SetDrawlist(ImGui.GetWindowDrawList());
+					ImGuizmo.SetRect(windowPos.X + origin.X, windowPos.Y + origin.Y, avail.X, avail.Y);
+					ImGuizmo.SetOrthographic(!isPerspectiveProjection);
 
-				_renderSceneView(gameTime);
-				ImGui.Image(renderTargetHandle, avail);
-				
-				ImGuizmo.SetDrawlist();
-				ImGuizmo.SetRect(windowPos.X + origin.X, windowPos.Y + origin.Y, avail.X, avail.Y);
-				ImGuizmo.SetOrthographic(!isPerspectiveProjection);
+					// Manipulate selected object
+					if (EntityManager.selected != null) {
+						Utils.MatrixToArray(viewMatrix, out var viewArr);
+						Utils.MatrixToArray(projectionMatrix, out var projArr);
 
-				if (EntityManager.selected != null) {
-					Utils.MatrixToArray(viewMatrix, out var viewArr);
-					Utils.MatrixToArray(projectionMatrix, out var projArr);
+						var transform = EntityManager.selected.transform;
+						Utils.MatrixToArray(transform.TransformationMatrix, out var transformArr);
 
-					var transform = EntityManager.selected.transform;
-					Utils.MatrixToArray(transform.TransformationMatrix, out var transformArr);
-
-					if (ImGuizmo.Manipulate(ref viewArr[0], ref projArr[0], gizmoOperation, gizmoMode, ref transformArr[0])) {
-						transform.TransformationMatrix = Utils.CopyArrayToMatrix(transformArr);
+						if (ImGuizmo.Manipulate(ref viewArr[0], ref projArr[0], gizmoOperation, gizmoMode, ref transformArr[0])) {
+							transform.TransformationMatrix = Utils.CopyArrayToMatrix(transformArr);
+						}
 					}
-				}
+					#endregion Gizmo
 
-				// View manipulation
-				if (ImGui.IsWindowHovered()) {
-					if (ImGui.IsMouseClicked(ImGuiMouseButton.Middle)){
-						manipulationMode = game.keyboardState.IsKeyDown(Keys.LeftShift) ? ViewManipulationMode.Translate
-																						: ViewManipulationMode.Rotate;
+					#region input
+					if (ImGui.IsWindowHovered()) {
+						if (ImGui.IsMouseClicked(ImGuiMouseButton.Middle)){
+							manipulationMode = game.keyboardState.IsKeyDown(Keys.LeftShift) ? ViewManipulationMode.Translate : ViewManipulationMode.Rotate;
 
-						ImGui.SetWindowFocus();
-					}
-
-					// Zoom
-					if (ImGui.IsWindowFocused()) {
-						cameraPos += Vector3.Transform(new Vector3(0, 0, game.mouseState.DeltaScrollWheelValue * 0.005f), cameraRotation);
+							ImGui.SetWindowFocus();
+						}
 
 						if (ImGui.IsMouseClicked(ImGuiMouseButton.Right)) {
 							EntityManager.selected = null;
@@ -103,55 +99,43 @@ namespace SceneEditor {
 								SNVector2 offset = origin + windowPos;
 								Vector2 mousePos = new Vector2(game.mouseState.Position.X - offset.X, game.mouseState.Position.Y - offset.Y);
 								Vector2 factor = new Vector2(avail.X / game.GraphicsDevice.Viewport.Width, avail.Y / game.GraphicsDevice.Viewport.Height);
-								
+									
 								if (comp.IsHovered(viewMatrix, projectionMatrix, mousePos / factor)) {
 									EntityManager.selected = (comp as Component).entity;
 								}
 							}
+
+							ImGui.SetWindowFocus();
+						}
+
+						// Zoom
+						if (ImGui.IsWindowFocused()) {
+							cameraPos += Vector3.Transform(new Vector3(0, 0, game.mouseState.DeltaScrollWheelValue * 0.005f), cameraRotation);
 						}
 					}
-				}
 
-
-				// Editor camera manipulation
-				if (manipulationMode != ViewManipulationMode.None) {
-					Point mouseDelta = game.mouseState.Position - previousMousePos;
-
-					switch (manipulationMode) {
-					case ViewManipulationMode.Translate:
-						cameraPos += Vector3.Transform(new Vector3(-mouseDelta.X * 0.01f, mouseDelta.Y * 0.01f, 0), cameraRotation);
-						break;
-					
-					// TODO: Make a better rotation system
-					case ViewManipulationMode.Rotate:
-						cameraRotationEuler -= new Vector3(mouseDelta.Y * 0.005f, mouseDelta.X * 0.005f, 0f);
-
-						var newCamRot = Quaternion.CreateFromYawPitchRoll(cameraRotationEuler.Y, cameraRotationEuler.X, cameraRotationEuler.Z);
-						cameraRotation = newCamRot;
-
-						// cameraRotation *= Quaternion.CreateFromAxisAngle(Vector3.Left, -mouseDelta.Y * 0.005f) * Quaternion.CreateFromAxisAngle(Vector3.Up, mouseDelta.X * 0.005f);
-						break;
+					if (ImGui.IsMouseReleased(ImGuiMouseButton.Middle)) {
+						manipulationMode = ViewManipulationMode.None;
 					}
+
+					// Projection mode switch
+					if (ImGui.IsWindowFocused()) {
+						if (game.keyboardState.WasKeyJustDown(Keys.P)) {
+							isPerspectiveProjection = !isPerspectiveProjection;
+						}
+
+						var selected = EntityManager.selected;
+						if (game.keyboardState.WasKeyJustDown(Keys.O) && selected != null) {
+							_moveToEntity(selected);
+						}
+					}
+
+					#endregion Input
+
+					projectionMatrix = isPerspectiveProjection ? Matrix.CreatePerspectiveFieldOfView(viewFov, avail.X/avail.Y, 0.01f, 10000f) : Matrix.CreateOrthographic(avail.X, avail.Y, 0.01f, 10000f);
+
+					ImGui.EndChild();
 				}
-				
-				previousMousePos = game.mouseState.Position;
-
-				if (ImGui.IsMouseReleased(ImGuiMouseButton.Middle)) {
-					manipulationMode = ViewManipulationMode.None;
-				}
-
-				// Projection mode switch
-				if (ImGui.IsWindowFocused() && game.keyboardState.WasKeyJustDown(Keys.P)) {
-					isPerspectiveProjection = !isPerspectiveProjection;
-				}
-
-
-				Matrix newProj = isPerspectiveProjection ? Matrix.CreatePerspectiveFieldOfView(viewFov, avail.X/avail.Y, 0.01f, 10000f)
-														 : Matrix.CreateOrthographic(avail.X, avail.Y, 0.01f, 10000f);
-
-				projectionMatrix = Matrix.Lerp(projectionMatrix, newProj, 30f * deltaTime);
-
-				ImGui.EndChild();
 				ImGui.End();
 			}
 		
@@ -161,24 +145,45 @@ namespace SceneEditor {
 		public override void Update(GameTime gameTime) {
 			float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 			
-			// Camera animatiom
+			// Camera interpolation
 			Matrix newMatrix = Matrix.CreateLookAt(cameraPos, cameraPos + Vector3.Transform(Vector3.Forward, cameraRotation), Vector3.Up);
 			viewMatrix = Matrix.Lerp(viewMatrix, newMatrix, 30f * deltaTime);
 
+			// Shortcuts
 			if (game.keyboardState.WasKeyJustDown(Keys.T)) gizmoOperation = OPERATION.TRANSLATE;
 			if (game.keyboardState.WasKeyJustDown(Keys.R)) gizmoOperation = OPERATION.ROTATE;
 			if (game.keyboardState.WasKeyJustDown(Keys.S)) gizmoOperation = OPERATION.SCALE;
-
 			if (game.keyboardState.WasKeyJustDown(Keys.M)) gizmoMode ^= (MODE)1;
 
-			if (EntityManager.selected != null) {
-				var selected = EntityManager.selected;
 
-				if (game.keyboardState.WasKeyJustDown(Keys.O)) {
-					_moveToEntity(selected);
+			// Editor camera manipulation
+			if (manipulationMode != ViewManipulationMode.None) {
+				Point mouseDelta = game.mouseState.DeltaPosition;
+
+				switch (manipulationMode) {
+				case ViewManipulationMode.Translate:
+					cameraPos += Vector3.Transform(new Vector3(mouseDelta.X * 0.01f, -mouseDelta.Y * 0.01f, 0), cameraRotation);
+					break;
+						
+				// TODO: Make a better rotation system
+				case ViewManipulationMode.Rotate:
+					cameraRotationEuler -= new Vector3(-mouseDelta.Y * 0.005f, -mouseDelta.X * 0.005f, 0f);
+
+					var newCamRot = Quaternion.CreateFromYawPitchRoll(cameraRotationEuler.Y, cameraRotationEuler.X, cameraRotationEuler.Z);
+					cameraRotation = newCamRot;
+
+					// cameraRotation *= Quaternion.CreateFromAxisAngle(Vector3.Left, -mouseDelta.Y * 0.005f) * Quaternion.CreateFromAxisAngle(Vector3.Up, mouseDelta.X * 0.005f);
+					break;
 				}
 			}
 		}
+
+		public override void Close() {
+			game.imguiRenderer.UnbindTexture(renderTargetHandle);
+			renderTarget.Dispose();
+		}
+
+
 
 		private void _renderSceneView(GameTime gameTime) {
 			var _defaultRenderTargets = graphicsDevice.GetRenderTargets();
@@ -186,7 +191,7 @@ namespace SceneEditor {
 			graphicsDevice.SetRenderTarget(renderTarget);
 			graphicsDevice.Clear(Color.CornflowerBlue);
 
-			EntityManager.Render(gameTime, viewMatrix, projectionMatrix);
+			EntityManager.Render(gameTime, viewMatrix, projectionMatrix, backfaceCulling, wireframe);
 
 			graphicsDevice.SetRenderTargets(_defaultRenderTargets);
 		}
@@ -227,6 +232,9 @@ namespace SceneEditor {
 
 					ImGui.SliderAngle("Fov", ref viewFov, 15, 180);
 
+					ImGui.MenuItem("Backface Culling", "", ref backfaceCulling);
+					ImGui.MenuItem("Wireframe", "", ref wireframe);
+
 					ImGui.EndMenu();
 				}
 
@@ -243,15 +251,11 @@ namespace SceneEditor {
 
 			if (mesh != null) {
 				float meshRadius = mesh.BoundingSphere.Transform(entity.transform.TransformationMatrix).Radius;
-				dist = meshRadius * 1.5f;
+				dist = meshRadius * 2f;
 			}
 
 			cameraPos = entity.transform.Position + Vector3.Transform(Vector3.Backward, cameraRotation) * dist;
 		}
-
-		public override void Close() {
-			game.imguiRenderer.UnbindTexture(renderTargetHandle);
-			renderTarget.Dispose();
-		}
+	
 	}
 }
