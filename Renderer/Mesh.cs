@@ -30,10 +30,10 @@ namespace Kuro.Renderer {
     }
 
     public class MeshPart : IDisposable {
-        private GL _gl => GraphicsRenderer.gl;
+        private static GL _gl => GraphicsRenderer.gl;
         
-        private Vertex[] vertices;
-        private uint[] indices;
+        private readonly Vertex[] vertices;
+        private readonly uint[] indices;
         
         BufferObject<Vertex> vbo;
         BufferObject<uint> ebo;
@@ -55,7 +55,7 @@ namespace Kuro.Renderer {
     }
 
     public class ModelMesh : ModelNode, IDisposable {
-        private GL _gl => GraphicsRenderer.gl;
+        private static GL _gl => GraphicsRenderer.gl;
 
         public MeshPart[] Parts {get; private set;}
 

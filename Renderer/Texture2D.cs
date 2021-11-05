@@ -19,7 +19,7 @@ namespace Kuro.Renderer {
     }
 
     public class Texture2D : IDisposable {
-        private GL _gl => GraphicsRenderer.gl;
+        private static GL _gl => GraphicsRenderer.gl;
         private uint _handle;
 
         public static TextureFilter DefaultMinifyFilter {get; set;} = TextureFilter.Linear;
@@ -30,6 +30,7 @@ namespace Kuro.Renderer {
         public TextureFilter MagnifyFilter {
             get => _magFilter;
             set {
+                _magFilter = value;
                 Bind();
                 _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)value);
             }
@@ -37,8 +38,9 @@ namespace Kuro.Renderer {
 
         private TextureFilter _minFilter = DefaultMagnifyFilter;
         public TextureFilter MinifyFilter {
-            get => _magFilter;
+            get => _minFilter;
             set {
+                _minFilter = value;
                 Bind();
                 _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)value);
             }
@@ -48,6 +50,7 @@ namespace Kuro.Renderer {
         public TextureWrap WrapMode {
             get => _wrapMode;
             set {
+                _wrapMode = value;
                 Bind();
                 _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)value);
                 _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)value);

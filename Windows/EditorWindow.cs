@@ -11,11 +11,11 @@ namespace SceneEditor {
     class EditorWindow {
         protected const float GUI_FILL = -float.Epsilon;
         
-        public Rectangle windowRect {get; private set;}
+        public Rectangle WindowRect {get; private set;}
         public bool isOpen = true;
 
-        protected MainGame game => MainGame.Instance;
-        protected GraphicsDevice graphicsDevice => game.GraphicsDevice;
+        protected static MainGame Game => MainGame.Instance;
+        protected static GraphicsDevice GraphicsDevice => Game.GraphicsDevice;
 
         public virtual void Render(GameTime gameTime, uint dockId) {}
         public virtual void Update(GameTime gameTime) {}

@@ -7,33 +7,33 @@ using SceneEditor.Resources;
 
 namespace SceneEditor.EntitySystem {
     class InternalComponentField : ComponentFieldBase {
-        public InternalComponent component {get; private set;}
-        public MemberInfo member {get; private set;}
+        public InternalComponent Component {get; private set;}
+        public MemberInfo Member {get; private set;}
 
         public InternalComponentField(InternalComponent component, MemberInfo member, string name, bool isReadOnly) : base(name, null, isReadOnly) {
-            this.type = (member as FieldInfo)?.FieldType ??
+            this.Type = (member as FieldInfo)?.FieldType ??
                         (member as PropertyInfo).PropertyType;
 
-            this.component = component;
-            this.member = member;
+            this.Component = component;
+            this.Member = member;
         }
 
         public override object Value {
-            get => member.MemberType switch {
-                MemberTypes.Field => (member as FieldInfo).GetValue(component),
-                MemberTypes.Property => (member as PropertyInfo).GetValue(component),
+            get => Member.MemberType switch {
+                MemberTypes.Field => (Member as FieldInfo).GetValue(Component),
+                MemberTypes.Property => (Member as PropertyInfo).GetValue(Component),
 
                 _ => throw new Exception("Bad member type")
             };
 
             set {
                 // TODO: Cache casted MemberInfo
-                switch (member.MemberType) {
+                switch (Member.MemberType) {
                 case MemberTypes.Field:
-                    (member as FieldInfo).SetValue(component, value);
+                    (Member as FieldInfo).SetValue(Component, value);
                     break;
                 case MemberTypes.Property:
-                    (member as PropertyInfo).SetValue(component, value);
+                    (Member as PropertyInfo).SetValue(Component, value);
                     break;
                 }
             }
@@ -78,11 +78,11 @@ namespace SceneEditor.EntitySystem {
     // Components
     [Category("", hidden = true)]
     class Transform : InternalComponent {
-        public Vector3 Position = new Vector3(1, 1, 1);
-        public Vector3 Scale = new Vector3(1, 1, 1);
+        public Vector3 Position = new(1, 1, 1);
+        public Vector3 Scale = new(1, 1, 1);
         
         [VisibleField(customName = "Rotation")]
-        public Vector3 EulerRotation = new Vector3();
+        public Vector3 EulerRotation = new();
 
         [HiddenField]
         public Quaternion Rotation => Quaternion.CreateFromYawPitchRoll(
@@ -126,9 +126,9 @@ namespace SceneEditor.EntitySystem {
             set {
                 if ((_mesh = value) != null) {
                     Matrix transformation = _mesh.Mesh.ParentBone.ModelTransform;
-                    transformation.Translation = entity.transform.Position;
+                    transformation.Translation = entity.Transform.Position;
 
-                    entity.transform.TransformationMatrix = transformation;
+                    entity.Transform.TransformationMatrix = transformation;
                 }
             }
         }
@@ -143,7 +143,7 @@ namespace SceneEditor.EntitySystem {
 
                 effect.View = view;
                 effect.Projection = projection;
-                effect.World = entity.transform.TransformationMatrix;
+                effect.World = entity.Transform.TransformationMatrix;
             }
 
             Mesh.Mesh.Draw();
@@ -152,16 +152,16 @@ namespace SceneEditor.EntitySystem {
         public bool IsHovered(Matrix view, Matrix projection, Vector2 mousePos) {
             if (Mesh == null) return false;
 
-            Matrix world = entity.transform.TransformationMatrix;
+            Matrix world = entity.Transform.TransformationMatrix;
             Viewport vp = MainGame.Instance.GraphicsDevice.Viewport;
 
             Vector3 nearMouse = vp.Unproject(new Vector3(mousePos, 0), projection, view, Matrix.Identity);
             Vector3 farMouse = vp.Unproject(new Vector3(mousePos, 1), projection, view, Matrix.Identity);
 
-            Vector3 dir = Vector3.Normalize(farMouse - nearMouse);
-            Ray ray = new Ray(nearMouse, dir);
+            var dir = Vector3.Normalize(farMouse - nearMouse);
+            var ray = new Ray(nearMouse, dir);
 
-            foreach (var triangle in Mesh.triangles) {
+            foreach (var triangle in Mesh.Triangles) {
                 var v1 = Vector3.Transform(triangle.Item1, world);
                 var v2 = Vector3.Transform(triangle.Item2, world);
                 var v3 = Vector3.Transform(triangle.Item3, world);

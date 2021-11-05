@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 namespace SceneEditor.EntitySystem {
     static class EntityManager {
         public static Entity selected;
-        public static List<Entity> entities = new List<Entity>();
+        public static List<Entity> entities = new();
 
         // Callbacks
         public static void Update(GameTime gameTime) {
@@ -89,7 +89,7 @@ namespace SceneEditor.EntitySystem {
 
     class Entity {
         public string name;
-        public List<Component> components = new List<Component>();
+        public List<Component> components = new();
 
         public Entity(string name) {
             this.name = name;
@@ -126,7 +126,7 @@ namespace SceneEditor.EntitySystem {
         }
 
         private Transform _transform;
-        public Transform transform {
+        public Transform Transform {
             get {
                 if (_transform == null) _transform = GetComponent<Transform>();
                 return _transform;
@@ -165,16 +165,16 @@ namespace SceneEditor.EntitySystem {
     //         I could just make the constructor accept callbacks to be
     //         called when getting and setting the value.
     abstract class ComponentFieldBase {
-        public string name {get; protected set;}
-        public bool isReadOnly {get; protected set;}
-        public Type type {get; protected set;}
+        public string Name {get; protected set;}
+        public bool IsReadOnly {get; protected set;}
+        public Type Type {get; protected set;}
 
         public abstract object Value {get; set;}
 
         public ComponentFieldBase(string name, Type type, bool isReadOnly) {
-            this.name = name;
-            this.type = type;
-            this.isReadOnly = isReadOnly;
+            this.Name = name;
+            this.Type = type;
+            this.IsReadOnly = isReadOnly;
         }
 
         public T GetValueCasted<T>() {

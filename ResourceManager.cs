@@ -11,7 +11,7 @@ using ImGuiNET;
 namespace SceneEditor.Resources {
     // TODO: Find a better way to manage contents
     static class ResourceManager {
-        public static Dictionary<string, Resource> resources = new Dictionary<string, Resource>();
+        public static Dictionary<string, Resource> resources = new();
 
         public static void AddResource(string name, Resource resource) {
             resources.Add(name, resource);
@@ -30,7 +30,7 @@ namespace SceneEditor.Resources {
             resources.Remove(name, out var currResource);
 
             currResource.OnRemove();
-            currResource.thumbnail?.Dispose();
+            currResource.Thumbnail?.Dispose();
             MainGame.Instance.imguiRenderer.UnbindTexture(currResource.ImGuiThumbPointer);
 
             foreach (var resource in resources) {
@@ -55,14 +55,14 @@ namespace SceneEditor.Resources {
 
     /// <summary>A wrapper around an external resource</summary>
     abstract class Resource {
-        private Dictionary<string, Resource> resources => ResourceManager.resources;
+        private static Dictionary<string, Resource> _resources => ResourceManager.resources;
 
         public Resource Parent {get; set;}
         public abstract object RawResource {get; set;}
         public IntPtr ImGuiThumbPointer {get; private set;}
 
         private Texture2D _thumbnail;
-        public Texture2D thumbnail {
+        public Texture2D Thumbnail {
             get => _thumbnail;
             protected set {
                 var imguiRenderer = MainGame.Instance.imguiRenderer;
@@ -82,9 +82,9 @@ namespace SceneEditor.Resources {
             get => _name;
             set {
                 if (_name != null)
-                    resources.Remove(_name);
-                
-                resources[value] = this;
+                    _resources.Remove(_name);
+
+                _resources[value] = this;
                 _name = value;
             }
         }
@@ -107,12 +107,12 @@ namespace SceneEditor.Resources {
             Model = model;
 
             // TODO: Generate thumbnail
-            thumbnail = MainGame.Instance.blankTexture;
+            Thumbnail = MainGame.Instance.blankTexture;
 
             foreach (var mesh in model.Meshes) {
-                var meshRes = new MeshResource(mesh);
-
-                meshRes.Parent = this;
+                var meshRes = new MeshResource(mesh) {
+                    Parent = this
+                };
                 ResourceManager.AddResource(mesh.Name, meshRes);
             }
         }
@@ -124,14 +124,14 @@ namespace SceneEditor.Resources {
     }
 
     class MeshResource : Resource {
-        public Tuple<Vector3, Vector3, Vector3>[] triangles {get; private set;}
+        public Tuple<Vector3, Vector3, Vector3>[] Triangles {get; private set;}
 
         private ModelMesh _mesh;
         public ModelMesh Mesh {
             get => _mesh;
             private set {
                 _mesh = value;
-                triangles = value.GetTriangles();
+                Triangles = value.GetTriangles();
 
                 _generateThumbnail();
             }
@@ -144,7 +144,7 @@ namespace SceneEditor.Resources {
     
         public MeshResource(ModelMesh mesh) {
             var gd = MainGame.Instance.GraphicsDevice;
-            thumbnail = new RenderTarget2D(gd, 100, 100, false, SurfaceFormat.Color, DepthFormat.Depth24);
+            Thumbnail = new RenderTarget2D(gd, 100, 100, false, SurfaceFormat.Color, DepthFormat.Depth24);
             
             Mesh = mesh;
         }
@@ -159,7 +159,7 @@ namespace SceneEditor.Resources {
             Matrix view = Matrix.CreateLookAt(camPos, Vector3.Zero, Vector3.Up);
             Matrix proj = Matrix.CreatePerspectiveFieldOfView(MathF.PI/2f, 1, 0.1f, 10000);
 
-            var thumb = thumbnail as RenderTarget2D;
+            var thumb = Thumbnail as RenderTarget2D;
             thumb.RenderTo(delegate {
                 thumb.GraphicsDevice.Clear(Color.CornflowerBlue);
 

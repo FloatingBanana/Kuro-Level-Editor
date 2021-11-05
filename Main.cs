@@ -19,7 +19,7 @@ namespace SceneEditor {
         public IntPtr blankTextureHandle;
 
         // Managers
-        private GraphicsDeviceManager _graphics;
+        private readonly GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
         public ImGuiRenderer imguiRenderer;
 
@@ -28,7 +28,7 @@ namespace SceneEditor {
         public KeyboardStateExtended keyboardState;
 
         // Window management
-        private List<EditorWindow> windows = new List<EditorWindow>();
+        private readonly List<EditorWindow> windows = new();
 
         public MainGame() {
             _graphics = new GraphicsDeviceManager(this);

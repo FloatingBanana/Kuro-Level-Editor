@@ -3,9 +3,9 @@ using Silk.NET.OpenGL.Legacy;
 
 namespace Kuro.Renderer {
     public class BufferObject<TDataType> : IDisposable where TDataType : unmanaged {
-        private GL _gl => GraphicsRenderer.gl;
-        private uint _handle;
-        private BufferTargetARB _bufferType;
+        private static GL _gl => GraphicsRenderer.gl;
+        private readonly uint _handle;
+        private readonly BufferTargetARB _bufferType;
 
         public unsafe BufferObject( Span<TDataType> data, BufferTargetARB bufferType) {
             _bufferType = bufferType;

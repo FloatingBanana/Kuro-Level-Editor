@@ -10,7 +10,7 @@ using SNVector2 = System.Numerics.Vector2;
 namespace SceneEditor {
     class ResourceWindow : EditorWindow {
         private Type selectedType = typeof(ModelResource);
-        public HashSet<Resource> selectedResource = new HashSet<Resource>();
+        public HashSet<Resource> selectedResource = new();
 
         public ResourceWindow() {
             
@@ -45,11 +45,11 @@ namespace SceneEditor {
         }
     
         private const float spacing = 15;
-        private SNVector2 thumbSize = new SNVector2(50, 90);
+        private SNVector2 thumbSize = new(50, 90);
         private void _renderResourceSelector(GameTime gameTime) {
             if (ImGui.BeginChild("Resources", new SNVector2(GUI_FILL, GUI_FILL), true)) {
                 // Clear selection
-                if (ImGui.IsMouseClicked(ImGuiMouseButton.Left) && ImGui.IsWindowHovered() && !game.keyboardState.IsControlDown()) {
+                if (ImGui.IsMouseClicked(ImGuiMouseButton.Left) && ImGui.IsWindowHovered() && !Game.keyboardState.IsControlDown()) {
                     selectedResource.Clear();
                 }
                 

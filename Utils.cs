@@ -29,7 +29,7 @@ namespace SceneEditor {
                 mat.M14 = arr[3]; mat.M24 = arr[7]; mat.M34 = arr[11]; mat.M44 = arr[15];
             }
             public static Matrix CopyArrayToMatrix(float[] arr) {
-                Matrix mat = new Matrix();
+                var mat = new Matrix();
                 CopyArrayToMatrix(arr, ref mat);
                 return mat;
             }
@@ -67,16 +67,11 @@ namespace SceneEditor {
         
             // Ray intersection against a triangle
             public static void Intersects(this Ray ray, ref Vector3 vertex1, ref Vector3 vertex2, ref Vector3 vertex3, out float? result) {
-                Vector3 edge1, edge2;
+                Vector3.Subtract(ref vertex2, ref vertex1, out var edge1);
+                Vector3.Subtract(ref vertex3, ref vertex1, out var edge2);
 
-                Vector3.Subtract(ref vertex2, ref vertex1, out edge1);
-                Vector3.Subtract(ref vertex3, ref vertex1, out edge2);
-
-                Vector3 directionCrossEdge2;
-                Vector3.Cross(ref ray.Direction, ref edge2, out directionCrossEdge2);
-
-                float determinant;
-                Vector3.Dot(ref edge1, ref directionCrossEdge2, out determinant);
+                Vector3.Cross(ref ray.Direction, ref edge2, out var directionCrossEdge2);
+                Vector3.Dot(ref edge1, ref directionCrossEdge2, out var determinant);
 
                 if (determinant > -float.Epsilon && determinant < float.Epsilon) {
                     result = null;
@@ -85,11 +80,8 @@ namespace SceneEditor {
 
                 float inverseDeterminant = 1.0f / determinant;
 
-                Vector3 distanceVector;
-                Vector3.Subtract(ref ray.Position, ref vertex1, out distanceVector);
-
-                float triangleU;
-                Vector3.Dot(ref distanceVector, ref directionCrossEdge2, out triangleU);
+                Vector3.Subtract(ref ray.Position, ref vertex1, out var distanceVector);
+                Vector3.Dot(ref distanceVector, ref directionCrossEdge2, out var triangleU);
                 triangleU *= inverseDeterminant;
 
                 if (triangleU < 0 || triangleU > 1) {
@@ -97,11 +89,9 @@ namespace SceneEditor {
                     return;
                 }
 
-                Vector3 distanceCrossEdge1;
-                Vector3.Cross(ref distanceVector, ref edge1, out distanceCrossEdge1);
+                Vector3.Cross(ref distanceVector, ref edge1, out var distanceCrossEdge1);
 
-                float triangleV;
-                Vector3.Dot(ref ray.Direction, ref distanceCrossEdge1, out triangleV);
+                Vector3.Dot(ref ray.Direction, ref distanceCrossEdge1, out var triangleV);
                 triangleV *= inverseDeterminant;
 
                 if (triangleV < 0 || triangleU + triangleV > 1) {
@@ -109,8 +99,7 @@ namespace SceneEditor {
                     return;
                 }
 
-                float rayDistance;
-                Vector3.Dot(ref edge2, ref distanceCrossEdge1, out rayDistance);
+                Vector3.Dot(ref edge2, ref distanceCrossEdge1, out var rayDistance);
                 rayDistance *= inverseDeterminant;
 
                 if (rayDistance < 0) {
@@ -193,15 +182,12 @@ namespace SceneEditor {
             for (int i = 0; i < str.Length; i++) {
                 char c = str[i];
 
-                if (i == 0) {
+                if (i == 0)
                     sb.Append(char.ToUpper(c));
-                }
-                else if (char.IsUpper(c)) {
-                    sb.Append(" ").Append(char.ToLower(c));
-                }
-                else {
+                else if (char.IsUpper(c))
+                    sb.Append(' ').Append(char.ToLower(c));
+                else
                     sb.Append(c);
-                }
             }
 
             return sb.ToString();

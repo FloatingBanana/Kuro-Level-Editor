@@ -19,8 +19,8 @@ using AssTexture = Silk.NET.Assimp.Texture;
 
 namespace Kuro.Renderer {
     public class Model : IDisposable {
-        private static Assimp _assimp = Assimp.GetApi();
-        private GL _gl => GraphicsRenderer.gl;
+        private static readonly Assimp _assimp = Assimp.GetApi();
+        private static GL _gl => GraphicsRenderer.gl;
 
         private string directory;
 
@@ -53,7 +53,7 @@ namespace Kuro.Renderer {
             directory = Path.GetDirectoryName(path);
         }
 
-        private unsafe void _processNode(AssNode* node, AssScene* scene, ModelNode parent) {
+        private static unsafe void _processNode(AssNode* node, AssScene* scene, ModelNode parent) {
             ModelNode modelNode = null;
 
             // Mesh
@@ -65,7 +65,7 @@ namespace Kuro.Renderer {
             AssCamera* camera = null;
             for (int c = 0; c < scene->MNumCameras; c++) {
                 if (scene->MCameras[c]->MName == node->MName) {
-                    modelNode = _processCamera(node, scene->MCameras[c], parent)
+                    modelNode = _processCamera(node, scene->MCameras[c], parent);
                     break;
                 }
             }
@@ -77,19 +77,19 @@ namespace Kuro.Renderer {
                 Console.WriteLine($"Discarted node '{node->MName}'");
             }
 
-            new AssScene().MCameras[0]->
-            new AssNode().
+            // new AssScene().MCameras[0]->
+            // new AssNode().
 
         }
 
-        private unsafe ModelMesh _processMesh(AssNode* node, AssScene* scene, ModelNode parent) {
+        private static unsafe ModelMesh _processMesh(AssNode* node, AssScene* scene, ModelNode parent) {
             var parts = new MeshPart[node->MNumMeshes];
 
             for (uint p = 0; p < node->MNumMeshes; p++) {
                 AssMesh* part = scene->MMeshes[node->MMeshes[p]];
 
-                Vertex[] vertices = new Vertex[part->MNumVertices];
-                List<uint> indices = new List<uint>((int)part->MNumFaces * 3);
+                var vertices = new Vertex[part->MNumVertices];
+                var indices = new List<uint>((int)part->MNumFaces * 3);
                 
                 for (uint v = 0; v < part->MNumVertices; v++) {
                     vertices[v] = new Vertex {
@@ -112,7 +112,7 @@ namespace Kuro.Renderer {
             return new ModelMesh(node->MName, node->MTransformation, parent, parts);
         }
 
-        private unsafe ModelCamera _processCamera(AssNode* node, AssCamera* camera, ModelNode parent) {
+        private static unsafe ModelCamera _processCamera(AssNode* node, AssCamera* camera, ModelNode parent) {
             return new ModelCamera(
                 node->MName,
                 node->MTransformation,

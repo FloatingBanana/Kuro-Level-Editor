@@ -11,8 +11,8 @@ using SNVector2 = System.Numerics.Vector2;
 
 namespace SceneEditor {
 	class ComponentsWindow : EditorWindow {
-		public static List<Type> rootCategory = new List<Type>();
-		public static Dictionary<string, List<Type>> categories = new Dictionary<string, List<Type>>();
+		public static List<Type> rootCategory = new();
+		public static Dictionary<string, List<Type>> categories = new();
 
 		static ComponentsWindow() {
 			UpdateAvailableComponents();
@@ -41,7 +41,7 @@ namespace SceneEditor {
 								foreach (var field in comp.Fields) {
 									ImGui.TableNextRow();
 									ImGui.TableNextColumn();
-									ImGui.Text(field.name);
+									ImGui.Text(field.Name);
 
 									ImGui.TableNextColumn();
 									_renderValueEditor(field);
@@ -91,10 +91,10 @@ namespace SceneEditor {
 
 
 		private void _renderValueEditor(ComponentFieldBase field) {
-			Type type = field.type;
-			bool disabled = field.isReadOnly;
+			Type type = field.Type;
+			bool disabled = field.IsReadOnly;
 
-			ImGui.PushID(field.name);
+			ImGui.PushID(field.Name);
 			ImGui.PushItemWidth(GUI_FILL);
 
 			if (type == typeof(string)) {
@@ -183,7 +183,7 @@ namespace SceneEditor {
 
 
 		private const float spacing = 10;
-		private SNVector2 thumbSize = new SNVector2(40, 70);
+		private SNVector2 thumbSize = new(40, 70);
 		private bool _renderResourceSelectorPopup(Type type, Resource current, out Resource selection) {
 			bool selected = false;
 			selection = null;

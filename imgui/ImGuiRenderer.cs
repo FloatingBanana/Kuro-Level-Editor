@@ -12,13 +12,13 @@ namespace ImGuiNET
     /// </summary>
     public class ImGuiRenderer
     {
-        private Game _game;
+        private readonly Game _game;
 
         // Graphics
-        private GraphicsDevice _graphicsDevice;
+        private readonly GraphicsDevice _graphicsDevice;
 
         private BasicEffect _effect;
-        private RasterizerState _rasterizerState;
+        private readonly RasterizerState _rasterizerState;
 
         private byte[] _vertexData;
         private VertexBuffer _vertexBuffer;
@@ -29,7 +29,7 @@ namespace ImGuiNET
         private int _indexBufferSize;
 
         // Textures
-        private Dictionary<IntPtr, Texture2D> _loadedTextures;
+        private readonly Dictionary<IntPtr, Texture2D> _loadedTextures;
 
         private int _textureId;
         private IntPtr? _fontTextureId;
@@ -37,7 +37,7 @@ namespace ImGuiNET
         // Input
         private int _scrollWheelValue;
 
-        private List<int> _keys = new List<int>();
+        private readonly List<int> _keys = new();
 
         public ImGuiRenderer(Game game)
         {
@@ -192,7 +192,7 @@ namespace ImGuiNET
         /// </summary>
         protected virtual Effect UpdateEffect(Texture2D texture)
         {
-            _effect = _effect ?? new BasicEffect(_graphicsDevice);
+            _effect ??= new BasicEffect(_graphicsDevice);
 
             var io = ImGui.GetIO();
 
