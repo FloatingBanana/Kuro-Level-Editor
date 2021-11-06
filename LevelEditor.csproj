@@ -23,15 +23,22 @@
     <MonoGameContentReference Include="Content\Content.mgcb" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="ImGuiNET">
-      <HintPath>deps\ImGui.NET.dll</HintPath>
-    </Reference>
-    <Reference Include="ImGuizmoNET">
-      <HintPath>deps\ImGuizmo.NET.dll</HintPath>
-    </Reference>
-    <Content Include="deps/cimgui.dll" CopyToOutputDirectory="Always" Link="cimgui.dll" />
-    <Content Include="deps/cimguizmo.dll" CopyToOutputDirectory="Always" Link="cimguizmo.dll" />
+    <Reference Include="ImGuiNET" HintPath="deps/ImGui.NET.dll" />
+    <Reference Include="ImGuizmoNET" HintPath="deps/ImGuizmo.NET.dll" />
   </ItemGroup>
+
+  <!-- Linux native libs -->
+  <ItemGroup Condition="$(OS) == Unix">
+    <Content Include="deps/native/linux-x64/cimgui.so" CopyToOutputDirectory="Always" Link="cimgui.so" />
+    <Content Include="deps/native/linux-x64/cimguizmo.so" CopyToOutputDirectory="Always" Link="cimguizmo.so" />
+  </ItemGroup>
+
+  <!-- Windows native libs -->
+  <ItemGroup Condition="$(OS) == Windows_NT">
+    <Content Include="deps/native/win-x64/cimgui.dll" CopyToOutputDirectory="Always" Link="cimgui.dll" />
+    <Content Include="deps/native/win-x64/cimguizmo.dll" CopyToOutputDirectory="Always" Link="cimguizmo.dll" />
+  </ItemGroup>
+
   <ItemGroup>
     <TrimmerRootAssembly Include="Microsoft.Xna.Framework.Content.ContentTypeReader" Visible="false" />
   </ItemGroup>

@@ -170,8 +170,8 @@ namespace SceneEditor {
                 ImGui.EndMainMenuBar();
             }
         }
-
-        [DllImport("SDL2.dll", CallingConvention = CallingConvention.Cdecl)]
+        
+        [DllImport("SDL2", CallingConvention = CallingConvention.Cdecl)]
         private static extern void SDL_MaximizeWindow(IntPtr window);
     }
 }
