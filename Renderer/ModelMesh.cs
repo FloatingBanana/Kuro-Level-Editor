@@ -35,17 +35,27 @@ namespace Kuro.Renderer {
         private readonly Vertex[] vertices;
         private readonly uint[] indices;
         
-        BufferObject<Vertex> vbo;
-        BufferObject<uint> ebo;
+        private BufferObject<Vertex> vbo;
+        private BufferObject<uint> ebo;
+
+        private const string _attrPosition = "vPosition";
+        private const string _attrColor = "vColor";
+        private const string _attrTexCoords = "vTexCoords";
+
 
         public MeshPart(Vertex[] vertices, uint[] indices) {
             this.vertices = vertices;
             this.indices = indices;
-        }
 
-        private void _setupMesh() {
+
             vbo = new BufferObject<Vertex>(vertices, BufferTargetARB.ArrayBuffer);
             ebo = new BufferObject<uint>(indices, BufferTargetARB.ElementArrayBuffer);
+        }
+
+        public unsafe void Draw() {
+            
+
+
         }
         
         public void Dispose() {
@@ -55,8 +65,6 @@ namespace Kuro.Renderer {
     }
 
     public class ModelMesh : ModelNode, IDisposable {
-        private static GL _gl => GraphicsRenderer.gl;
-
         public MeshPart[] Parts {get; private set;}
 
         public ModelMesh(string name, Matrix4x4 transform, ModelNode parent, MeshPart[] parts) : base(name, transform, parent) {
