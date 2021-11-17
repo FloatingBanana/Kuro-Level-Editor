@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <PublishReadyToRun>false</PublishReadyToRun>
     <TieredCompilation>false</TieredCompilation>
     <LangVersion>latest</LangVersion>
@@ -22,6 +22,7 @@
   <ItemGroup>
     <MonoGameContentReference Include="Content\Content.mgcb" />
   </ItemGroup>
+  
   <ItemGroup>
     <Reference Include="ImGuiNET" HintPath="deps/ImGui.NET.dll" />
     <Reference Include="ImGuizmoNET" HintPath="deps/ImGuizmo.NET.dll" />
@@ -42,12 +43,14 @@
   <ItemGroup>
     <TrimmerRootAssembly Include="Microsoft.Xna.Framework.Content.ContentTypeReader" Visible="false" />
   </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="MonoGame.Extended.Input" Version="3.8.0" />
     <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.0.1641" />
     <PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.0.1641" />
     <PackageReference Include="Silk.NET" Version="2.9.0" />
     <PackageReference Include="Silk.NET.Assimp" Version="2.9.0" />
+    <PackageReference Include="Silk.NET.Input.Extensions" Version="2.10.1" />
     <PackageReference Include="Silk.NET.OpenGL.Legacy" Version="2.9.0" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.4" />
   </ItemGroup>
