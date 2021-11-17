@@ -17,14 +17,13 @@ namespace Kuro.Renderer {
         CounterClockwise = GLEnum.Ccw,
     }
 
-    public static class GraphicsRenderer {
+    public static partial class GraphicsRenderer {
         public static GL gl {get; private set;}
 
-        private static FaceCulling _cullFace;
         public static FaceCulling CullFace {
-            get => _cullFace;
+            get => _currState.cullFace;
             set {
-                if ((_cullFace = value) != FaceCulling.None) {
+                if ((_currState.cullFace = value) != FaceCulling.None) {
                     gl.Enable(EnableCap.CullFace);
                     gl.CullFace((GLEnum)value);
                 }
@@ -33,20 +32,18 @@ namespace Kuro.Renderer {
             }
         }
 
-        private static WindingOrder _windingOrder;
         public static WindingOrder CullDirection {
-            get => _windingOrder;
+            get => _currState.cullDirection;
             set {
-                _windingOrder = value;
+                _currState.cullDirection = value;
                 gl.FrontFace((GLEnum)value);
             }
         }
 
-        private static bool _depthTest;
         public static bool DepthTest {
-            get => _depthTest;
+            get => _currState.depthTest;
             set {
-                _depthTest = value;
+                _currState.depthTest = value;
 
                 if (value)
                     gl.Enable(EnableCap.DepthTest);
@@ -55,11 +52,11 @@ namespace Kuro.Renderer {
             }
         }
 
-        private static bool _wireframe;
         public static bool Wireframe {
-            get => _wireframe;
+            get => _currState.wireframe;
             set {
-                _wireframe = value;
+                _currState.wireframe = value;
+
                 if (value)
                     gl.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
                 else
@@ -69,27 +66,45 @@ namespace Kuro.Renderer {
 
         // TODO: Stencil
 
+        public static Rectangle Scissor {
+            get => _currState.scissor;
+            set {
+                _currState.scissor = value;
+                gl.Scissor(value.X, value.Y, (uint)value.Width, (uint)value.Height);
+            }
+        }
 
-        public static void InitializeGraphics(GL gl) {
-            GraphicsRenderer.gl = gl;
+        public static void InitializeGraphics(GL glApi) {
+            gl = glApi;
+
+            _graphicsStack.Push(new GraphicsState());
 
             DepthTest = true;
             CullFace = FaceCulling.Back;
             CullDirection = WindingOrder.CounterClockwise;
+            Scissor = new Rectangle(0, 0, (int)WindowManager.WindowSize.X, (int)WindowManager.WindowSize.Y);
+            Wireframe = false;
 
             GraphicsRenderer.gl.Enable(EnableCap.Blend);
+            GraphicsRenderer.gl.Enable(EnableCap.ScissorTest);
+            GraphicsRenderer.gl.Disable(EnableCap.StencilTest);
+
             GraphicsRenderer.gl.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
         }
 
         public static void Clear(Color color) {
-            gl.ClearColor(color.R, color.G, color.B, color.A);
+            gl.ClearColor(color.R/255f, color.G/255f, color.B/255f, color.A/255f);
             gl.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit);
         }
 
         public static void Clear() {
-            Clear(Color.Transparent);
+            Clear(Color.Black);
         }
 
-        
+        public static void AssertGLError() {
+            var err = gl.GetError();
+            if (err != (GLEnum)ErrorCode.NoError)
+                ; //Breakpoint goes here
+        }
     }
 }
