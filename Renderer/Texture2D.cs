@@ -19,12 +19,13 @@ namespace Kuro.Renderer {
     }
 
     public class Texture2D : IDisposable {
-        private static GL _gl => GraphicsRenderer.gl;
-        private uint _handle;
-
+        private static GL gl => GraphicsRenderer.gl;
+        
         public static TextureFilter DefaultMinifyFilter {get; set;} = TextureFilter.Linear;
         public static TextureFilter DefaultMagnifyFilter {get; set;} = TextureFilter.Linear;
         public static TextureWrap DefaultWrapMode {get; set;} = TextureWrap.Clamp;
+
+        public uint Handle {get; private set;}
 
         private TextureFilter _magFilter = DefaultMinifyFilter;
         public TextureFilter MagnifyFilter {
@@ -32,7 +33,7 @@ namespace Kuro.Renderer {
             set {
                 _magFilter = value;
                 Bind();
-                _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)value);
+                gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)value);
             }
         }
 
@@ -42,7 +43,7 @@ namespace Kuro.Renderer {
             set {
                 _minFilter = value;
                 Bind();
-                _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)value);
+                gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)value);
             }
         }
 
@@ -52,8 +53,8 @@ namespace Kuro.Renderer {
             set {
                 _wrapMode = value;
                 Bind();
-                _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)value);
-                _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)value);
+                gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)value);
+                gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)value);
             }
         }
 
@@ -63,39 +64,47 @@ namespace Kuro.Renderer {
             img.Mutate(x => x.Flip(FlipMode.Vertical));
 
             fixed (void* data = &MemoryMarshal.GetReference(img.GetPixelRowSpan(0))) {
-                Load(data, (uint)img.Width, (uint)img.Height);
+                Load(data, img.Width, img.Height);
             }
 
             img.Dispose();
         }
 
-        public unsafe Texture2D(Span<Byte> data, uint width, uint height) {
+        public unsafe Texture2D(Span<Byte> data, int width, int height) {
             fixed (void* d = &data[0]) {
                 Load(d, width, height);
             }
         }
 
-        private unsafe void Load(void* data, uint width, uint height) {
-            _handle = _gl.GenTexture();
+        public unsafe Texture2D(byte* data, int width, int height) {
+            Load(data, width, height);
+        }
+
+        private unsafe void Load(void* data, int width, int height) {
+            Handle = gl.GenTexture();
             Bind();
 
-            _gl.TexImage2D(TextureTarget.Texture2D, 0, (int)InternalFormat.Rgba, width, height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, data);
+            gl.TexImage2D(TextureTarget.Texture2D, 0, (int)InternalFormat.Rgba, (uint)width, (uint)height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, data);
 
-            _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)DefaultWrapMode);
-            _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)DefaultWrapMode);
-            _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)DefaultMinifyFilter);
-            _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)DefaultMagnifyFilter);
+            gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)DefaultWrapMode);
+            gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)DefaultWrapMode);
+            gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)DefaultMinifyFilter);
+            gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)DefaultMagnifyFilter);
 
             // _gl.GenerateMipmap(TextureTarget.Texture2D);
         }
 
-        public void Bind(TextureUnit textureSlot = TextureUnit.Texture0) {
-            _gl.ActiveTexture(textureSlot);
-            _gl.BindTexture(TextureTarget.Texture2D, _handle);
+        public void Bind(TextureUnit textureSlot) {
+            gl.ActiveTexture(textureSlot);
+            gl.BindTexture(TextureTarget.Texture2D, Handle);
+        }
+
+        public void Bind(int textureSlot = 0) {
+            Bind(TextureUnit.Texture0 + textureSlot);
         }
 
         public void Dispose() {
-            _gl.DeleteTexture(_handle);
+            gl.DeleteTexture(Handle);
         }
     }
 }
