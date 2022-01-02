@@ -12,8 +12,8 @@ namespace Kuro.Renderer {
     }
 
     public enum TextureWrap {
-        Clamp = GLEnum.Clamp,
-        ClampEdge = GLEnum.ClampToEdge,
+        ClampZero = GLEnum.ClampToBorder,
+        Clamp = GLEnum.ClampToEdge,
         Repeat = GLEnum.Repeat,
         MirroredRepeat = GLEnum.MirroredRepeat,
     }
@@ -23,7 +23,7 @@ namespace Kuro.Renderer {
         
         public static TextureFilter DefaultMinifyFilter {get; set;} = TextureFilter.Linear;
         public static TextureFilter DefaultMagnifyFilter {get; set;} = TextureFilter.Linear;
-        public static TextureWrap DefaultWrapMode {get; set;} = TextureWrap.Clamp;
+        public static TextureWrap DefaultWrapMode {get; set;} = TextureWrap.ClampZero;
 
         public uint Handle {get; private set;}
 

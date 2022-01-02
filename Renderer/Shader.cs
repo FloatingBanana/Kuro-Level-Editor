@@ -28,7 +28,7 @@ namespace Kuro.Renderer {
             _gl.DeleteShader(fragment);
         }
 
-        public void Use() {
+        public virtual void Use() {
             _gl.UseProgram(_handle);
         }
 
@@ -52,12 +52,30 @@ namespace Kuro.Renderer {
             _gl.UniformMatrix4(GetUniformLocation(name), 1, false, (float*)&value);
         }
 
+        public void SetUniform(string name, Vector2 value) {
+            _gl.Uniform2(GetUniformLocation(name), value);
+        }
+
         public void SetUniform(string name, Vector3 value) {
             _gl.Uniform3(GetUniformLocation(name), value);
         }
 
+        public void SetUniform(string name, Vector4 value) {
+            _gl.Uniform4(GetUniformLocation(name), value);
+        }
+
+        public void SetUniform(string name, Texture2D value) {
+            value.Bind();
+            _gl.Uniform1(GetUniformLocation(name), 0);
+        }
+
         public int GetAttribLocation(string name) {
-            return _gl.GetAttribLocation(_handle, name);
+            int loc = _gl.GetAttribLocation(_handle, name);
+
+            if (loc == -1)
+                throw new ArgumentException($"'{name}' attribute not found");
+            
+            return loc;
         }
 
         private static uint LoadShader(ShaderType type, string code) {

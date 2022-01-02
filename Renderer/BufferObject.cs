@@ -7,7 +7,7 @@ namespace Kuro.Renderer {
         private readonly uint _handle;
         private readonly BufferTargetARB _bufferType;
 
-        public unsafe BufferObject( Span<TDataType> data, BufferTargetARB bufferType) {
+        public unsafe BufferObject(Span<TDataType> data, BufferTargetARB bufferType) {
             _bufferType = bufferType;
             _handle = _gl.GenBuffer();
 

@@ -17,6 +17,9 @@ namespace Kuro.Renderer {
         CounterClockwise = GLEnum.Ccw,
     }
 
+
+    // REVIEW: I think this should be an object
+    //         instead of a static class
     public static partial class GraphicsRenderer {
         public static GL gl {get; private set;}
 
@@ -77,19 +80,20 @@ namespace Kuro.Renderer {
         public static void InitializeGraphics(GL glApi) {
             gl = glApi;
 
+            // gl.Enable(EnableCap.Blend);
+            gl.Enable(EnableCap.ScissorTest);
+            gl.Disable(EnableCap.StencilTest);
+            
             _graphicsStack.Push(new GraphicsState());
 
             DepthTest = true;
-            CullFace = FaceCulling.Back;
+            CullFace = FaceCulling.None;
             CullDirection = WindingOrder.CounterClockwise;
-            Scissor = new Rectangle(0, 0, (int)WindowManager.WindowSize.X, (int)WindowManager.WindowSize.Y);
+            Scissor = new Rectangle(0, 0, (int)WindowManager.DisplaySize.X, (int)WindowManager.DisplaySize.Y);
             Wireframe = false;
 
-            GraphicsRenderer.gl.Enable(EnableCap.Blend);
-            GraphicsRenderer.gl.Enable(EnableCap.ScissorTest);
-            GraphicsRenderer.gl.Disable(EnableCap.StencilTest);
 
-            GraphicsRenderer.gl.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+            // gl.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
         }
 
         public static void Clear(Color color) {

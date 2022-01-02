@@ -9,6 +9,9 @@ using System.Numerics;
 using SilkMath = Silk.NET.Maths;
 
 namespace Kuro.Renderer {
+
+    // REVIEW: I think this should be an object
+    //         instead of a static class
     public static class WindowManager {
         private static IWindow _window;
 
@@ -36,6 +39,7 @@ namespace Kuro.Renderer {
 
         public static event Action<IMouse, MouseButton, Vector2> MouseClick;
         public static event Action<IMouse, MouseButton, Vector2> MouseDoubleClick;
+        public static event Action<IMouse, Vector2> MouseMove;
         #endregion Events
 
         public static void InitializeWindow() {
@@ -62,6 +66,7 @@ namespace Kuro.Renderer {
                 Mouse = input.Mice.FirstOrDefault();
                 Mouse.Click += (mouse, button, pos) => MouseClick?.Invoke(mouse, button, pos);
                 Mouse.DoubleClick += (mouse, button, pos) => MouseDoubleClick?.Invoke(mouse, button, pos);
+                Mouse.MouseMove += (mouse, pos) => MouseMove?.Invoke(mouse, pos);
 
                 Load?.Invoke();
             };

@@ -9,9 +9,9 @@ using Silk.NET.Assimp;
 namespace Kuro.Renderer {
     
     public abstract class ModelLight : ModelNode {
-        public Vector3 Ambient {get; set;} = new(1,1,1);
-        public Vector3 Diffuse {get; set;} = new(1,1,1);
-        public Vector3 Specular {get; set;} = new(1,1,1);
+        public Vector3 AmbientColor {get; set;} = new(1,1,1);
+        public Vector3 DiffuseColor {get; set;} = new(1,1,1);
+        public Vector3 SpecularColor {get; set;} = new(1,1,1);
 
         protected ModelLight(string name, Matrix4x4 transform, ModelNode parent) : base(name, transform, parent) {
             
