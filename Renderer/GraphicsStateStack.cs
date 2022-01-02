@@ -28,7 +28,7 @@ namespace Kuro.Renderer {
             _graphicsStack.Pop();
 
             if (_graphicsStack.Count == 0)
-                throw new InvalidOperationException("State stack is empty. Mayybe there are pops without pushs");
+                throw new InvalidOperationException("State stack is empty. Maybe there are pops without pushs");
             
             CullFace = _currState.cullFace;
             CullDirection = _currState.cullDirection;
