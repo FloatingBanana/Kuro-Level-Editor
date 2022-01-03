@@ -37,11 +37,9 @@ namespace Kuro.Renderer.Imgui
         {
             Init();
 
-            var io = ImGuiNET.ImGui.GetIO();
+            var io = ImGui.GetIO();
             io.Fonts.AddFontDefault();
             io.BackendFlags |= ImGuiBackendFlags.RendererHasVtxOffset;
-
-            GraphicsRenderer.AssertGLError();
 
             CreateDeviceResources();
             SetKeyMappings();
@@ -56,18 +54,15 @@ namespace Kuro.Renderer.Imgui
             _windowWidth = (int)WindowManager.WindowSize.X;
             _windowHeight = (int)WindowManager.WindowSize.Y;
 
-            GraphicsRenderer.AssertGLError();
+            IntPtr context = ImGui.CreateContext();
+            ImGui.SetCurrentContext(context);
+            ImGui.StyleColorsDark();
 
-            IntPtr context = ImGuiNET.ImGui.CreateContext();
-            ImGuiNET.ImGui.SetCurrentContext(context);
-            ImGuiNET.ImGui.StyleColorsDark();
-
-            GraphicsRenderer.AssertGLError();
         }
 
         private void BeginFrame()
         {
-            ImGuiNET.ImGui.NewFrame();
+            ImGui.NewFrame();
             _frameBegun = true;
             WindowManager.Resize += WindowResized;
             WindowManager.KeyChar += OnKeyChar;
@@ -92,8 +87,8 @@ namespace Kuro.Renderer.Imgui
             if (_frameBegun)
             {
                 _frameBegun = false;
-                ImGuiNET.ImGui.Render();
-                RenderImDrawData(ImGuiNET.ImGui.GetDrawData());
+                ImGui.Render();
+                RenderImDrawData(ImGui.GetDrawData());
             }
         }
 
@@ -104,14 +99,14 @@ namespace Kuro.Renderer.Imgui
         {
             if (_frameBegun)
             {
-                ImGuiNET.ImGui.Render();
+                ImGui.Render();
             }
 
             SetPerFrameImGuiData(deltaSeconds);
             UpdateImGuiInput();
 
             _frameBegun = true;
-            ImGuiNET.ImGui.NewFrame();
+            ImGui.NewFrame();
         }
 
         /// <summary>
@@ -120,7 +115,7 @@ namespace Kuro.Renderer.Imgui
         /// </summary>
         private void SetPerFrameImGuiData(float deltaSeconds)
         {
-            var io = ImGuiNET.ImGui.GetIO();
+            var io = ImGui.GetIO();
             io.DisplaySize = new Vector2(_windowWidth, _windowHeight);
 
             if (_windowWidth > 0 && _windowHeight > 0)
@@ -134,7 +129,7 @@ namespace Kuro.Renderer.Imgui
 
         private void UpdateImGuiInput()
         {
-            var io = ImGuiNET.ImGui.GetIO();
+            var io = ImGui.GetIO();
 
             var mouseState = WindowManager.Mouse.CaptureState();
             var keyboardState = WindowManager.Keyboard;
@@ -154,9 +149,8 @@ namespace Kuro.Renderer.Imgui
             foreach (Key key in Enum.GetValues(typeof(Key)))
             {
                 if (key == Key.Unknown)
-                {
                     continue;
-                }
+                
                 io.KeysDown[(int) key] = keyboardState.IsKeyPressed(key);
             }
 
@@ -167,10 +161,10 @@ namespace Kuro.Renderer.Imgui
 
             _pressedChars.Clear();
 
-            io.KeyCtrl = keyboardState.IsKeyPressed(Key.ControlLeft) || keyboardState.IsKeyPressed(Key.ControlRight);
-            io.KeyAlt = keyboardState.IsKeyPressed(Key.AltLeft) || keyboardState.IsKeyPressed(Key.AltRight);
-            io.KeyShift = keyboardState.IsKeyPressed(Key.ShiftLeft) || keyboardState.IsKeyPressed(Key.ShiftRight);
-            io.KeySuper = keyboardState.IsKeyPressed(Key.SuperLeft) || keyboardState.IsKeyPressed(Key.SuperRight);
+            io.KeyCtrl  = keyboardState.IsKeyPressed(Key.ControlLeft) || keyboardState.IsKeyPressed(Key.ControlRight);
+            io.KeyAlt   = keyboardState.IsKeyPressed(Key.AltLeft)     || keyboardState.IsKeyPressed(Key.AltRight);
+            io.KeyShift = keyboardState.IsKeyPressed(Key.ShiftLeft)   || keyboardState.IsKeyPressed(Key.ShiftRight);
+            io.KeySuper = keyboardState.IsKeyPressed(Key.SuperLeft)   || keyboardState.IsKeyPressed(Key.SuperRight);
         }
 
         internal void PressChar(char keyChar)
@@ -180,26 +174,26 @@ namespace Kuro.Renderer.Imgui
 
         private static void SetKeyMappings()
         {
-            var io = ImGuiNET.ImGui.GetIO();
-            io.KeyMap[(int) ImGuiKey.Tab] = (int) Key.Tab;
-            io.KeyMap[(int) ImGuiKey.LeftArrow] = (int) Key.Left;
+            var io = ImGui.GetIO();
+            io.KeyMap[(int) ImGuiKey.Tab]        = (int) Key.Tab;
+            io.KeyMap[(int) ImGuiKey.LeftArrow]  = (int) Key.Left;
             io.KeyMap[(int) ImGuiKey.RightArrow] = (int) Key.Right;
-            io.KeyMap[(int) ImGuiKey.UpArrow] = (int) Key.Up;
-            io.KeyMap[(int) ImGuiKey.DownArrow] = (int) Key.Down;
-            io.KeyMap[(int) ImGuiKey.PageUp] = (int) Key.PageUp;
-            io.KeyMap[(int) ImGuiKey.PageDown] = (int) Key.PageDown;
-            io.KeyMap[(int) ImGuiKey.Home] = (int) Key.Home;
-            io.KeyMap[(int) ImGuiKey.End] = (int) Key.End;
-            io.KeyMap[(int) ImGuiKey.Delete] = (int) Key.Delete;
-            io.KeyMap[(int) ImGuiKey.Backspace] = (int) Key.Backspace;
-            io.KeyMap[(int) ImGuiKey.Enter] = (int) Key.Enter;
-            io.KeyMap[(int) ImGuiKey.Escape] = (int) Key.Escape;
-            io.KeyMap[(int) ImGuiKey.A] = (int) Key.A;
-            io.KeyMap[(int) ImGuiKey.C] = (int) Key.C;
-            io.KeyMap[(int) ImGuiKey.V] = (int) Key.V;
-            io.KeyMap[(int) ImGuiKey.X] = (int) Key.X;
-            io.KeyMap[(int) ImGuiKey.Y] = (int) Key.Y;
-            io.KeyMap[(int) ImGuiKey.Z] = (int) Key.Z;
+            io.KeyMap[(int) ImGuiKey.UpArrow]    = (int) Key.Up;
+            io.KeyMap[(int) ImGuiKey.DownArrow]  = (int) Key.Down;
+            io.KeyMap[(int) ImGuiKey.PageUp]     = (int) Key.PageUp;
+            io.KeyMap[(int) ImGuiKey.PageDown]   = (int) Key.PageDown;
+            io.KeyMap[(int) ImGuiKey.Home]       = (int) Key.Home;
+            io.KeyMap[(int) ImGuiKey.End]        = (int) Key.End;
+            io.KeyMap[(int) ImGuiKey.Delete]     = (int) Key.Delete;
+            io.KeyMap[(int) ImGuiKey.Backspace]  = (int) Key.Backspace;
+            io.KeyMap[(int) ImGuiKey.Enter]      = (int) Key.Enter;
+            io.KeyMap[(int) ImGuiKey.Escape]     = (int) Key.Escape;
+            io.KeyMap[(int) ImGuiKey.A]          = (int) Key.A;
+            io.KeyMap[(int) ImGuiKey.C]          = (int) Key.C;
+            io.KeyMap[(int) ImGuiKey.V]          = (int) Key.V;
+            io.KeyMap[(int) ImGuiKey.X]          = (int) Key.X;
+            io.KeyMap[(int) ImGuiKey.Y]          = (int) Key.Y;
+            io.KeyMap[(int) ImGuiKey.Z]          = (int) Key.Z;
         }
 
         private unsafe void SetupRenderState(ImDrawDataPtr drawDataPtr, int framebufferWidth, int framebufferHeight)
@@ -229,7 +223,6 @@ namespace Kuro.Renderer.Imgui
             _shader.Use();
             gl.Uniform1(_attribLocationTex, 0);
             gl.UniformMatrix4(_attribLocationProjMtx, 1, false, orthoProjection);
-            GraphicsRenderer.AssertGLError();
 
             gl.BindSampler(0, 0);
 
@@ -295,11 +288,8 @@ namespace Kuro.Renderer.Imgui
                 ImDrawListPtr cmdListPtr = drawDataPtr.CmdListsRange[n];
 
                 // Upload vertex/index buffers
-
                 gl.BufferData(GLEnum.ArrayBuffer, (nuint) (cmdListPtr.VtxBuffer.Size * sizeof(ImDrawVert)), (void*) cmdListPtr.VtxBuffer.Data, GLEnum.StreamDraw);
-                GraphicsRenderer.AssertGLError();
                 gl.BufferData(GLEnum.ElementArrayBuffer, (nuint) (cmdListPtr.IdxBuffer.Size * sizeof(ushort)), (void*) cmdListPtr.IdxBuffer.Data, GLEnum.StreamDraw);
-                GraphicsRenderer.AssertGLError();
 
                 for (int cmd_i = 0; cmd_i < cmdListPtr.CmdBuffer.Size; cmd_i++)
                 {
@@ -321,15 +311,11 @@ namespace Kuro.Renderer.Imgui
                         {
                             // Apply scissor/clipping rectangle
                             gl.Scissor((int) clipRect.X, (int) (framebufferHeight - clipRect.W), (uint) (clipRect.Z - clipRect.X), (uint) (clipRect.W - clipRect.Y));
-                            GraphicsRenderer.AssertGLError();
 
                             // Bind texture, Draw
                             gl.BindTexture(GLEnum.Texture2D, (uint) cmdPtr.TextureId);
-                            GraphicsRenderer.AssertGLError();
 
-                            // gl.DrawElementsBaseVertex(GLEnum.Triangles, cmdPtr.ElemCount, GLEnum.UnsignedShort, (void*) (cmdPtr.IdxOffset * sizeof(ushort)), (int) cmdPtr.VtxOffset);
                             gl.DrawElements(PrimitiveType.Triangles, (uint)cmdPtr.ElemCount, DrawElementsType.UnsignedShort, (void*)(cmdPtr.IdxOffset * sizeof(ushort)));
-                            GraphicsRenderer.AssertGLError();
                         }
                     }
                 }
@@ -348,48 +334,29 @@ namespace Kuro.Renderer.Imgui
             gl.BlendFuncSeparate((GLEnum) lastBlendSrcRgb, (GLEnum) lastBlendDstRgb, (GLEnum) lastBlendSrcAlpha, (GLEnum) lastBlendDstAlpha);
 
             if (lastEnableBlend)
-            {
                 gl.Enable(GLEnum.Blend);
-            }
             else
-            {
                 gl.Disable(GLEnum.Blend);
-            }
 
             if (lastEnableCullFace)
-            {
                 gl.Enable(GLEnum.CullFace);
-            }
             else
-            {
                 gl.Disable(GLEnum.CullFace);
-            }
 
             if (lastEnableDepthTest)
-            {
                 gl.Enable(GLEnum.DepthTest);
-            }
             else
-            {
                 gl.Disable(GLEnum.DepthTest);
-            }
+                
             if (lastEnableStencilTest)
-            {
                 gl.Enable(GLEnum.StencilTest);
-            }
             else
-            {
                 gl.Disable(GLEnum.StencilTest);
-            }
 
             if (lastEnableScissorTest)
-            {
                 gl.Enable(GLEnum.ScissorTest);
-            }
             else
-            {
                 gl.Disable(GLEnum.ScissorTest);
-            }
 
             gl.PolygonMode(GLEnum.FrontAndBack, (GLEnum) lastPolygonMode[0]);
 
@@ -399,9 +366,6 @@ namespace Kuro.Renderer.Imgui
         private void CreateDeviceResources()
         {
             // Backup GL state
-
-            GraphicsRenderer.AssertGLError();
-
             gl.GetInteger(GLEnum.TextureBinding2D, out int lastTexture);
             gl.GetInteger(GLEnum.ArrayBufferBinding, out int lastArrayBuffer);
 
@@ -452,8 +416,6 @@ namespace Kuro.Renderer.Imgui
             // Restore modified GL state
             gl.BindTexture(GLEnum.Texture2D, (uint) lastTexture);
             gl.BindBuffer(GLEnum.ArrayBuffer, (uint) lastArrayBuffer);
-
-            GraphicsRenderer.AssertGLError();
         }
 
         /// <summary>
@@ -462,7 +424,7 @@ namespace Kuro.Renderer.Imgui
         private unsafe void RecreateFontDeviceTexture()
         {
             // Build texture atlas
-            var io = ImGuiNET.ImGui.GetIO();
+            var io = ImGui.GetIO();
             io.Fonts.GetTexDataAsRGBA32(out IntPtr pixels, out int width, out int height, out int bytesPerPixel);   // Load as RGBA 32-bit (75% of the memory is wasted, but default font is so small) because it is more likely to be compatible with user's existing shaders. If your ImTextureId represent a higher-level concept than just a GL texture id, consider calling GetTexDataAsAlpha8() instead to save on GPU memory.
 
             // Upload texture to graphics system
