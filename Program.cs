@@ -7,7 +7,7 @@ using Silk.NET.Input;
 using ImGuiNET;
 using System.Drawing;
 
-namespace SceneEditor {
+namespace Kuro.LevelEditor {
     public static class Program {
         static ImGuiController imguiController;
 

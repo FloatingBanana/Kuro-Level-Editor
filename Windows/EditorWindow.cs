@@ -7,7 +7,7 @@ using ImGuizmoNET;
 
 using SNVector2 = System.Numerics.Vector2;
 
-namespace SceneEditor {
+namespace Kuro.LevelEditor {
     class EditorWindow {
         protected const float GUI_FILL = -float.Epsilon;
         

@@ -4,12 +4,12 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using ImGuiNET;
-using SceneEditor.EntitySystem;
-using SceneEditor.Resources;
+using Kuro.LevelEditor.EntitySystem;
+using Kuro.LevelEditor.Resources;
 
 using SNVector2 = System.Numerics.Vector2;
 
-namespace SceneEditor {
+namespace Kuro.LevelEditor {
 	class ComponentsWindow : EditorWindow {
 		public static List<Type> rootCategory = new();
 		public static Dictionary<string, List<Type>> categories = new();

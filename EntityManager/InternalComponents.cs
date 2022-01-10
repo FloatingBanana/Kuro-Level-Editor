@@ -3,9 +3,9 @@ using System.Reflection;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using SceneEditor.Resources;
+using Kuro.LevelEditor.Resources;
 
-namespace SceneEditor.EntitySystem {
+namespace Kuro.LevelEditor.EntitySystem {
     class InternalComponentField : ComponentFieldBase {
         public InternalComponent Component {get; private set;}
         public MemberInfo Member {get; private set;}

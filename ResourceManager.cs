@@ -8,7 +8,7 @@ using Microsoft.Xna.Framework.Content;
 using MonoGame.Extended.Input;
 using ImGuiNET;
 
-namespace SceneEditor.Resources {
+namespace Kuro.LevelEditor.Resources {
     // TODO: Find a better way to manage contents
     static class ResourceManager {
         public static Dictionary<string, Resource> resources = new();

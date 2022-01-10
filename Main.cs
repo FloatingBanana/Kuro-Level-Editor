@@ -7,10 +7,10 @@ using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended.Input;
 using ImGuiNET;
 using ImGuizmoNET;
-using SceneEditor.EntitySystem;
-using SceneEditor.Resources;
+using Kuro.LevelEditor.EntitySystem;
+using Kuro.LevelEditor.Resources;
 
-namespace SceneEditor {
+namespace Kuro.LevelEditor {
     // TODO: Make this class partial and separate some actions into different files
     public class MainGame : Game {
         public static MainGame Instance {get; private set;}

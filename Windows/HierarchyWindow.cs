@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using ImGuiNET;
-using SceneEditor.EntitySystem;
+using Kuro.LevelEditor.EntitySystem;
 
-namespace SceneEditor {
+namespace Kuro.LevelEditor {
     class HierarchyWindow : EditorWindow {
         public HierarchyWindow() {
             

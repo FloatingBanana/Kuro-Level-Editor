@@ -9,7 +9,7 @@ using ImGuizmoNET;
 
 using SNVector2 = System.Numerics.Vector2;
 
-namespace SceneEditor {
+namespace Kuro.LevelEditor {
     static class Utils {
 
         #region Math

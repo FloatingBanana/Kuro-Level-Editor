@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace SceneEditor.EntitySystem {
+namespace Kuro.LevelEditor.EntitySystem {
     static class EntityManager {
         public static Entity selected;
         public static List<Entity> entities = new();

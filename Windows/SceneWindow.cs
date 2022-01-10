@@ -4,13 +4,13 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended.Input;
-using SceneEditor.EntitySystem;
+using Kuro.LevelEditor.EntitySystem;
 using ImGuiNET;
 using ImGuizmoNET;
 
 using SNVector2 = System.Numerics.Vector2;
 
-namespace SceneEditor {
+namespace Kuro.LevelEditor {
 	enum ViewManipulationMode {
 		None,
 		Rotate,
