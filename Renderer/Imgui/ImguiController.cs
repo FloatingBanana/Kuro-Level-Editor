@@ -314,7 +314,6 @@ namespace Kuro.Renderer.Imgui
 
                             // Bind texture, Draw
                             gl.BindTexture(GLEnum.Texture2D, (uint) cmdPtr.TextureId);
-
                             gl.DrawElements(PrimitiveType.Triangles, (uint)cmdPtr.ElemCount, DrawElementsType.UnsignedShort, (void*)(cmdPtr.IdxOffset * sizeof(ushort)));
                         }
                     }

@@ -6,6 +6,7 @@ using Kuro.Renderer.Imgui;
 using Silk.NET.Input;
 using ImGuiNET;
 using System.Drawing;
+// using Silk.NET.OpenGL.Legacy;
 
 namespace Kuro.LevelEditor {
     public static class Program {
@@ -14,6 +15,25 @@ namespace Kuro.LevelEditor {
         static Model model;
 
         static TCamera cam;
+
+        static RenderTexture rt;
+
+        static float[] quad = {
+            0, 0,     -1, -1,
+            1, 0,      1, -1,
+            0, 1,     -1,  1,
+            1, 1,      1,  1,
+        };
+
+        static ushort[] indices = {
+            0, 1, 2,
+            1, 2, 3
+        };
+
+        static BufferObject<float> vbo;
+        static BufferObject<ushort> ebo;
+
+        static Shader shader2d;
 
         static void Main() {
             WindowManager.Load += Load;
@@ -30,6 +50,14 @@ namespace Kuro.LevelEditor {
             imguiController = new ImGuiController();
 
             model = new Model("Content/room.fbx");
+
+            vbo = new BufferObject<float>(quad, Silk.NET.OpenGL.Legacy.BufferTargetARB.ArrayBuffer);
+            ebo = new BufferObject<ushort>(indices, Silk.NET.OpenGL.Legacy.BufferTargetARB.ElementArrayBuffer);
+
+
+            rt = new RenderTexture(WindowManager.DisplaySize);
+
+            shader2d = Shader.CreateFromPath("Renderer/Shaders/2DRendering.vert", "Renderer/Shaders/2DRendering.frag");
 
             Vector2 wsize = WindowManager.DisplaySize;
             cam = new TCamera(new Vector3(0f, 0f, 0f), new Vector3(0f, 0f, 0f), Vector3.UnitY, wsize.X / wsize.Y);
@@ -63,6 +91,8 @@ namespace Kuro.LevelEditor {
 
             GraphicsRenderer.PushState();
 
+            rt.BindRendering();
+
             GraphicsRenderer.CullDirection = WindingOrder.CounterClockwise;
             GraphicsRenderer.CullFace = FaceCulling.Back;
             GraphicsRenderer.DepthTest = true;
@@ -81,7 +111,40 @@ namespace Kuro.LevelEditor {
                 }
             }
 
+            GraphicsRenderer.SetMainRenderTarget();
+            GraphicsRenderer.AssertGLError();
+
             GraphicsRenderer.PopState();
+
+            shader2d.Use();
+            rt.Bind(0);
+            shader2d.SetUniform("texture", 0);
+            GraphicsRenderer.AssertGLError();
+
+            ebo.Bind();
+            vbo.Bind();
+
+            uint positionLoc  = (uint)shader2d.GetAttribLocation("vPos");
+            uint texCoordsLoc = (uint)shader2d.GetAttribLocation("vTexCoords");
+            GraphicsRenderer.AssertGLError();
+
+            var gl = GraphicsRenderer.gl;
+
+            gl.VertexAttribPointer(positionLoc,  2, Silk.NET.OpenGL.Legacy.VertexAttribPointerType.Float, false, sizeof(float)*4, (void*)0);
+            gl.VertexAttribPointer(texCoordsLoc, 2, Silk.NET.OpenGL.Legacy.VertexAttribPointerType.Float, false, sizeof(float)*4, (void*)(sizeof(float)*2));
+            GraphicsRenderer.AssertGLError();
+
+            gl.EnableVertexAttribArray(positionLoc);
+            gl.EnableVertexAttribArray(texCoordsLoc);
+            GraphicsRenderer.AssertGLError();
+
+            gl.DrawElements(Silk.NET.OpenGL.Legacy.PrimitiveType.Triangles, (uint)indices.Length, Silk.NET.OpenGL.Legacy.DrawElementsType.UnsignedInt, (void*)0);
+
+            GraphicsRenderer.AssertGLError();
+            gl.DisableVertexAttribArray(positionLoc);
+            gl.DisableVertexAttribArray(texCoordsLoc);
+
+            GraphicsRenderer.AssertGLError();
             
             // ImGui.ShowDemoWindow();
             // imguiController.Render();
@@ -113,6 +176,10 @@ namespace Kuro.LevelEditor {
         static void Quit() {
             imguiController.Dispose();
             model.Dispose();
+
+            rt.Dispose();
+            vbo.Dispose();
+            ebo.Dispose();
         }
     }
 }

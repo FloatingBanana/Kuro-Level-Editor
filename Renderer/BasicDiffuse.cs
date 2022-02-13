@@ -24,13 +24,7 @@ namespace Kuro.Renderer {
             }
         }
 
-        // public Texture2D Texture {
-        //     set {
-        //         SetUniform("uTexture", value);
-        //         GraphicsRenderer.AssertGLError();
-        //     }
-        // }
-        public Texture2D Texture {get; set;} = _defaultTexture;
+        public Texture2D Texture {get; set;}
 
         public Vector4 Color {
             set {
@@ -46,12 +40,12 @@ namespace Kuro.Renderer {
         }
 
         public BasicDiffuseShader() : base(File.ReadAllText("Renderer/Shaders/BasicDiffuse.vert"), File.ReadAllText("Renderer/Shaders/BasicDiffuse.frag")) {
-            Use();
+        
         }
 
         public override void Use() {
             base.Use();
-            SetUniform("uTexture", Texture);
+            SetUniform("uTexture", Texture ?? _defaultTexture);
         }
     }
 

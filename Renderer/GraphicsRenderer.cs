@@ -105,10 +105,16 @@ namespace Kuro.Renderer {
             Clear(Color.Black);
         }
 
+        public static void SetMainRenderTarget() {
+            gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+        }
+
+#pragma warning disable CS0642
         public static void AssertGLError() {
             var err = gl.GetError();
             if (err != (GLEnum)ErrorCode.NoError)
                 ; //Breakpoint goes here
         }
+#pragma warning restore CS0642
     }
 }

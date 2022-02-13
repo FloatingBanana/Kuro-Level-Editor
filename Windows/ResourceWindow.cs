@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using ImGuiNET;
-using SceneEditor.EntitySystem;
-using SceneEditor.Resources;
+using Kuro.LevelEditor.EntitySystem;
+using Kuro.LevelEditor.Resources;
 
 using SNVector2 = System.Numerics.Vector2;
 
-namespace SceneEditor {
+namespace Kuro.LevelEditor {
     class ResourceWindow : EditorWindow {
         private Type selectedType = typeof(ModelResource);
         public HashSet<Resource> selectedResource = new();

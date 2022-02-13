@@ -90,8 +90,6 @@ namespace Kuro.Renderer {
             gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)DefaultWrapMode);
             gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)DefaultMinifyFilter);
             gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)DefaultMagnifyFilter);
-
-            // _gl.GenerateMipmap(TextureTarget.Texture2D);
         }
 
         public void Bind(TextureUnit textureSlot) {
