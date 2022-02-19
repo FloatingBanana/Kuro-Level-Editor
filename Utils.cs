@@ -8,6 +8,9 @@ using ImGuiNET;
 using ImGuizmoNET;
 
 using SNVector2 = System.Numerics.Vector2;
+using SNVector3 = System.Numerics.Vector3;
+using SNVector4 = System.Numerics.Vector4;
+using SNMatrix4x4 = System.Numerics.Matrix4x4;
 
 namespace Kuro.LevelEditor {
     static class Utils {
@@ -192,6 +195,48 @@ namespace Kuro.LevelEditor {
 
             return sb.ToString();
         }
+    
+        #region Conversions
+        
+            public static Vector2 Convert(SNVector2 v) {
+                return new Vector2(v.X, v.Y);
+            }
+            public static SNVector2 Convert(Vector2 v) {
+                return new SNVector2(v.X, v.Y);
+            }
+
+            public static Vector3 Convert(SNVector3 v) {
+                return new Vector3(v.X, v.Y, v.Z);
+            }
+            public static SNVector3 Convert(Vector3 v) {
+                return new SNVector3(v.X, v.Y, v.Z);
+            }
+
+            public static Vector4 Convert(SNVector4 v) {
+                return new Vector4(v.X, v.Y, v.Z, v.W);
+            }
+            public static SNVector4 Convert(Vector4 v) {
+                return new SNVector4(v.X, v.Y, v.Z, v.W);
+            }
+
+            public static Matrix Convert(SNMatrix4x4 v) {
+                return new Matrix(
+                    v.M11, v.M12, v.M13, v.M14,
+                    v.M21, v.M22, v.M23, v.M24,
+                    v.M31, v.M32, v.M33, v.M34,
+                    v.M41, v.M42, v.M43, v.M44
+                );
+            }
+            public static SNMatrix4x4 Convert(Matrix v) {
+                return new SNMatrix4x4(
+                    v.M11, v.M12, v.M13, v.M14,
+                    v.M21, v.M22, v.M23, v.M24,
+                    v.M31, v.M32, v.M33, v.M34,
+                    v.M41, v.M42, v.M43, v.M44
+                );
+            }
+
+        #endregion Conversions
     }
 
 

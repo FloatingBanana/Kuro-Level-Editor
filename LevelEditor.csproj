@@ -48,10 +48,7 @@
     <PackageReference Include="MonoGame.Extended.Input" Version="3.8.0" />
     <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.0.1641" />
     <PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.0.1641" />
-    <PackageReference Include="Silk.NET" Version="2.9.0" />
     <PackageReference Include="Silk.NET.Assimp" Version="2.9.0" />
-    <PackageReference Include="Silk.NET.Input.Extensions" Version="2.10.1" />
-    <PackageReference Include="Silk.NET.OpenGL.Legacy" Version="2.9.0" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.4" />
   </ItemGroup>
 </Project>

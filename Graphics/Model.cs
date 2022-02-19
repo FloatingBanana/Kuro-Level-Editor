@@ -1,10 +1,14 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Numerics;
 using System.Collections.Generic;
-using Silk.NET.OpenGL.Legacy;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Silk.NET.Assimp;
+
+using SNVector2 = System.Numerics.Vector2;
+using SNVector3 = System.Numerics.Vector3;
+using SNVector4 = System.Numerics.Vector4;
 
 using Assimp = Silk.NET.Assimp.Assimp;
 using AssScene = Silk.NET.Assimp.Scene;
@@ -16,32 +20,33 @@ using AssCamera = Silk.NET.Assimp.Camera;
 using AssTexture = Silk.NET.Assimp.Texture;
 using AssMaterial = Silk.NET.Assimp.Material;
 
-namespace Kuro.Renderer {
-    public class Model : IDisposable {
+namespace Kuro.LevelEditor.Graphics {
+    public class KuroModel : IDisposable {
         private static readonly Assimp _assimp = Assimp.GetApi();
-        private static GL _gl => GraphicsRenderer.gl;
 
+        private GraphicsDevice _graphicsDevice;
         private string _directory;
 
         public Dictionary<string, Texture2D> Textures = new();
-        public List<Shader> Materials {get; private set;} = new();
-        public List<ModelNode> Nodes {get; private set;} = new();
-        public ModelNode Root {get; private set;}
+        public List<Effect> Materials {get; private set;} = new();
+        public List<KuroModelNode> Nodes {get; private set;} = new();
+        public KuroModelNode Root {get; private set;}
 
         // REVIEW: Maybe using LINQ here isn't a good idea
-        public ModelMesh[] Meshes {
-            get => (from mesh in Nodes where mesh is ModelMesh select mesh as ModelMesh).ToArray();
+        public KuroModelMesh[] Meshes {
+            get => (from mesh in Nodes where mesh is KuroModelMesh select mesh as KuroModelMesh).ToArray();
         }
 
-        public ModelCamera[] Cameras {
-            get => (from camera in Nodes where camera is ModelCamera select camera as ModelCamera).ToArray();
+        public KuroModelCamera[] Cameras {
+            get => (from camera in Nodes where camera is KuroModelCamera select camera as KuroModelCamera).ToArray();
         }
 
-        public ModelLight[] Lights {
-            get => (from light in Nodes where light is ModelLight select light as ModelLight).ToArray();
+        public KuroModelLight[] Lights {
+            get => (from light in Nodes where light is KuroModelLight select light as KuroModelLight).ToArray();
         }
 
-        public Model(string path) {
+        public KuroModel(GraphicsDevice gd, string path) {
+            _graphicsDevice = gd;
             LoadModel(path);
         }
 
@@ -68,8 +73,8 @@ namespace Kuro.Renderer {
             Root = ProcessNode(scene->MRootNode, scene, null);
         }
 
-        private unsafe ModelNode ProcessNode(AssNode* node, AssScene* scene, ModelNode parent) {
-            ModelNode modelNode = null;
+        private unsafe KuroModelNode ProcessNode(AssNode* node, AssScene* scene, KuroModelNode parent) {
+            KuroModelNode modelNode = null;
 
             // Mesh
             if (node->MNumMeshes > 0) {
@@ -93,10 +98,10 @@ namespace Kuro.Renderer {
             }
 
             // Defaults to an empty node
-            modelNode ??= new ModelNode(node->MName, node->MTransformation, parent);
+            modelNode ??= new KuroModelNode(node->MName, Utils.Convert(node->MTransformation), parent);
 
             for (uint c = 0; c < node->MNumChildren; c++) {
-                ModelNode child = ProcessNode(node->MChildren[c], scene, modelNode);
+                KuroModelNode child = ProcessNode(node->MChildren[c], scene, modelNode);
                 modelNode.Children.Add(child);
                 Nodes.Add(child);
             }
@@ -104,30 +109,30 @@ namespace Kuro.Renderer {
             return modelNode;
         }
 
-        private unsafe ModelMesh ProcessMesh(AssNode* node, AssScene* scene, ModelNode parent) {
-            var parts = new MeshPart[node->MNumMeshes];
+        private unsafe KuroModelMesh ProcessMesh(AssNode* node, AssScene* scene, KuroModelNode parent) {
+            var parts = new KuroMeshPart[node->MNumMeshes];
 
             for (uint p = 0; p < node->MNumMeshes; p++) {
                 AssMesh* part = scene->MMeshes[node->MMeshes[p]];
                 parts[p] = ProcessMeshPart(part);
             }
 
-            var transform = Matrix4x4.Transpose(node->MTransformation);
-            return new ModelMesh(node->MName, transform, parent, parts);
+            var transform = Matrix.Transpose(Utils.Convert(node->MTransformation));
+            return new KuroModelMesh(node->MName, transform, parent, parts);
         }
 
-        private unsafe MeshPart ProcessMeshPart(AssMesh* part) {
+        private unsafe KuroMeshPart ProcessMeshPart(AssMesh* part) {
             var vertices = new Vertex[part->MNumVertices];
             var indices = new List<uint>((int)part->MNumFaces * 3);
 
             for (uint v = 0; v < part->MNumVertices; v++) {
                 vertices[v] = new Vertex {
-                    Position = part->MVertices[v],
-                    Normal = part->MNormals[v],
+                    Position = Utils.Convert(part->MVertices[v]),
+                    Normal = Utils.Convert(part->MNormals[v]),
                 };
 
                 if (part->MTextureCoords[0] != null) {
-                    Vector3 texc = part->MTextureCoords[0][v];
+                    SNVector3 texc = part->MTextureCoords[0][v];
                     vertices[v].TexCoords = new Vector2(texc.X, texc.Y);
                 }
             }
@@ -139,17 +144,17 @@ namespace Kuro.Renderer {
                     indices.Add(face.MIndices[i]);
             }
 
-            Shader shader = Materials[(int)part->MMaterialIndex];
-            return new MeshPart(vertices, indices.ToArray(), shader);
+            Effect shader = Materials[(int)part->MMaterialIndex];
+            return new KuroMeshPart(_graphicsDevice, vertices, indices.ToArray(), shader);
         }
 
-        private static unsafe ModelCamera ProcessCamera(AssNode* node, AssCamera* camera, ModelNode parent) {
-            return new ModelCamera(
+        private static unsafe KuroModelCamera ProcessCamera(AssNode* node, AssCamera* camera, KuroModelNode parent) {
+            return new KuroModelCamera(
                 node->MName,
-                node->MTransformation,
-                camera->MPosition,
-                camera->MLookAt,
-                camera->MUp,
+                Utils.Convert(node->MTransformation),
+                Utils.Convert(camera->MPosition),
+                Utils.Convert(camera->MLookAt),
+                Utils.Convert(camera->MUp),
                 camera->MHorizontalFOV,
                 camera->MClipPlaneNear,
                 camera->MClipPlaneFar,
@@ -158,20 +163,23 @@ namespace Kuro.Renderer {
             );
         }
 
-        private static unsafe ModelLight  ProcessLight(AssNode* node, AssLight* light, ModelNode parent) {
-            ModelLight modelLight = null;
+        private static unsafe KuroModelLight  ProcessLight(AssNode* node, AssLight* light, KuroModelNode parent) {
+            KuroModelLight modelLight = null;
+            Matrix transformation = Utils.Convert(node->MTransformation);
+			Vector3 pos = Utils.Convert(light->MPosition);
+			Vector3 dir = Utils.Convert(light->MDirection);
 
             switch (light->MType) {
             case LightSourceType.LightSourceDirectional:
-                modelLight = new ModelDirectionalLight(light->MName, node->MTransformation, light->MDirection, parent);
+                modelLight = new KuroModelDirectionalLight(light->MName, transformation, dir, parent);
                 break;
                 
             case LightSourceType.LightSourcePoint:
-                modelLight = new ModelPointLight(light->MName, node->MTransformation, light->MPosition, light->MAttenuationConstant, light->MAttenuationLinear, light->MAttenuationQuadratic, parent);
+                modelLight = new KuroModelPointLight(light->MName, transformation, pos, light->MAttenuationConstant, light->MAttenuationLinear, light->MAttenuationQuadratic, parent);
                 break;
             
             case LightSourceType.LightSourceSpot:
-                modelLight = new ModelSpotLight(light->MName, node->MTransformation, light->MPosition, light->MDirection, light->MAngleInnerCone, light->MAngleOuterCone, parent);
+                modelLight = new KuroModelSpotLight(light->MName, transformation, pos, dir, light->MAngleInnerCone, light->MAngleOuterCone, parent);
                 break;
             
             default:
@@ -179,17 +187,16 @@ namespace Kuro.Renderer {
                 return null;
             }
 
-            modelLight.AmbientColor = light->MColorAmbient;
-            modelLight.DiffuseColor = light->MColorDiffuse;
-            modelLight.SpecularColor = light->MColorSpecular;
+            modelLight.AmbientColor = Utils.Convert(light->MColorAmbient);
+            modelLight.DiffuseColor = Utils.Convert(light->MColorDiffuse);
+            modelLight.SpecularColor = Utils.Convert(light->MColorSpecular);
 
             return modelLight;
         }
 
-        private unsafe Shader ProcessMaterial(AssMaterial* material) {
-            var shader = new BasicDiffuseShader();
+        private unsafe Effect ProcessMaterial(AssMaterial* material) {
+            var shader = new BasicEffect(_graphicsDevice);
 
-            shader.Use();
             if (_assimp.GetMaterialTextureCount(material, TextureType.TextureTypeDiffuse) > 0) {
                 AssimpString path;
                 TextureMapMode mapMode;
@@ -198,29 +205,29 @@ namespace Kuro.Renderer {
                 if (!Textures.TryGetValue(path, out var texture)) {
                     string texPath = Path.Combine(_directory, path);
 
-                    texture = new Texture2D(texPath);
+                    texture = Texture2D.FromFile(_graphicsDevice, texPath);
                     Textures[texPath] = texture;
 
-                    texture.WrapMode = mapMode switch {
-                        TextureMapMode.TextureMapModeClamp => TextureWrap.Clamp,
-                        TextureMapMode.TextureMapModeDecal => TextureWrap.ClampZero,
-                        TextureMapMode.TextureMapModeWrap => TextureWrap.Repeat,
-                        TextureMapMode.TextureMapModeMirror => TextureWrap.MirroredRepeat,
-                        _ => TextureWrap.Clamp
-                    };
+                    // texture.WrapMode = mapMode switch {
+                    //     TextureMapMode.TextureMapModeClamp => TextureWrap.Clamp,
+                    //     TextureMapMode.TextureMapModeDecal => TextureWrap.ClampZero,
+                    //     TextureMapMode.TextureMapModeWrap => TextureWrap.Repeat,
+                    //     TextureMapMode.TextureMapModeMirror => TextureWrap.MirroredRepeat,
+                    //     _ => TextureWrap.Clamp
+                    // };
                 }
 
                 shader.Texture = texture;
             }
 
-            Vector4 color;
+            SNVector4 color;
             switch (_assimp.GetMaterialColor(material, Assimp.MaterialColorDiffuseBase, 0, 0, &color)) {
             case Return.ReturnSuccess:
-                shader.Color = color;
+                shader.DiffuseColor = new Vector3(color.X, color.Y, color.Z);
                 break;
             
             case Return.ReturnFailure:
-                shader.Color = Vector4.One;
+                shader.DiffuseColor = Vector3.One;
                 break;
             }
 
@@ -234,32 +241,32 @@ namespace Kuro.Renderer {
         }
     }
 
-    public class ModelNode {
+    public class KuroModelNode {
         public string Name {get; protected set;}
-        public ModelNode Parent {get; protected set;}
-        public Matrix4x4 Transform {get; protected set;} = Matrix4x4.Identity;
-        public List<ModelNode> Children {get; protected set;} = new();
+        public KuroModelNode Parent {get; protected set;}
+        public Matrix Transform {get; protected set;} = Matrix.Identity;
+        public List<KuroModelNode> Children {get; protected set;} = new();
 
-        public Matrix4x4 GlobalTransform {
-            get => (Parent?.GlobalTransform ?? Matrix4x4.Identity) * Transform;
+        public Matrix GlobalTransform {
+            get => (Parent?.GlobalTransform ?? Matrix.Identity) * Transform;
             // TODO Add setter
         }
 
-        public Matrix4x4 ModelTransform {
+        public Matrix ModelTransform {
             get {
-                var parentTransform = Parent.Parent == null ? Matrix4x4.Identity : Parent.ModelTransform;
+                var parentTransform = Parent.Parent == null ? Matrix.Identity : Parent.ModelTransform;
                 return parentTransform * Transform;
             }
         }
 
-        public ModelNode(string name, Matrix4x4 transform, ModelNode parent) {
+        public KuroModelNode(string name, Matrix transform, KuroModelNode parent) {
             Name = name;
             Transform = transform;
             Parent = parent;
         }
     }
 
-    public class ModelCamera : ModelNode {
+    public class KuroModelCamera : KuroModelNode {
         public Vector3 Position {get; private set;}
         public Vector3 Target {get; private set;}
         public Vector3 Up {get; private set;}
@@ -270,7 +277,7 @@ namespace Kuro.Renderer {
         public float AspectRatio {get; private set;}
 
         // TODO: Refactor this constructor
-        public ModelCamera(string name, Matrix4x4 transform, Vector3 position, Vector3 target, Vector3 up, float fov, float far, float near, float aspectRatio, ModelNode parent) : base(name, transform, parent) {
+        public KuroModelCamera(string name, Matrix transform, Vector3 position, Vector3 target, Vector3 up, float fov, float far, float near, float aspectRatio, KuroModelNode parent) : base(name, transform, parent) {
             Position = position;
             Target = target;
             Up = up;

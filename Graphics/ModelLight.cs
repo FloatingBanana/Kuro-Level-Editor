@@ -1,39 +1,33 @@
 using System;
-using System.Drawing;
-using System.Numerics;
-using System.Runtime.InteropServices;
-using Silk.NET.OpenGL.Legacy;
-using Silk.NET.Assimp;
+using Microsoft.Xna.Framework;
 
-
-namespace Kuro.Renderer {
-    
-    public abstract class ModelLight : ModelNode {
+namespace Kuro.LevelEditor.Graphics {
+    public abstract class KuroModelLight : KuroModelNode {
         public Vector3 AmbientColor {get; set;} = new(1,1,1);
         public Vector3 DiffuseColor {get; set;} = new(1,1,1);
         public Vector3 SpecularColor {get; set;} = new(1,1,1);
 
-        protected ModelLight(string name, Matrix4x4 transform, ModelNode parent) : base(name, transform, parent) {
+        protected KuroModelLight(string name, Matrix transform, KuroModelNode parent) : base(name, transform, parent) {
             
         }
     }
 
-    public class ModelDirectionalLight : ModelLight {
+    public class KuroModelDirectionalLight : KuroModelLight {
         public Vector3 Direction {get; set;}
 
-        public ModelDirectionalLight(string name, Matrix4x4 transform, Vector3 direction, ModelNode parent) : base(name, transform, parent) {
+        public KuroModelDirectionalLight(string name, Matrix transform, Vector3 direction, KuroModelNode parent) : base(name, transform, parent) {
             Direction = direction;
         }
     }
 
-    public class ModelPointLight : ModelLight {
+    public class KuroModelPointLight : KuroModelLight {
         public Vector3 Position {get; set;}
 
         public float AttenuationConstant {get; set;}
         public float AttenuationLinear {get; set;}
         public float AttenuationQuadratic {get; set;}
 
-        public ModelPointLight(string name, Matrix4x4 transform, Vector3 position, float constant, float linear, float quadratic, ModelNode parent) : base(name, transform, parent) {
+        public KuroModelPointLight(string name, Matrix transform, Vector3 position, float constant, float linear, float quadratic, KuroModelNode parent) : base(name, transform, parent) {
             Position = position;
             
             AttenuationConstant = constant;
@@ -42,14 +36,14 @@ namespace Kuro.Renderer {
         }
     }
 
-    public class ModelSpotLight : ModelLight {
+    public class KuroModelSpotLight : KuroModelLight {
         public Vector3 Position {get; set;}
         public Vector3 Direction {get; set;}
         
         public float InnerRadius {get; set;}
         public float OuterRadius {get; set;}
 
-        public ModelSpotLight(string name, Matrix4x4 transform, Vector3 position, Vector3 direction, float innerRadius, float outerRadius, ModelNode parent) : base(name, transform, parent) {
+        public KuroModelSpotLight(string name, Matrix transform, Vector3 position, Vector3 direction, float innerRadius, float outerRadius, KuroModelNode parent) : base(name, transform, parent) {
             Position = position;
             Direction = direction;
 

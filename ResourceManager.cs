@@ -1,12 +1,8 @@
 using System;
-using System.Linq;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Content;
-using MonoGame.Extended.Input;
-using ImGuiNET;
+using Kuro.LevelEditor.Graphics;
 
 namespace Kuro.LevelEditor.Resources {
     // TODO: Find a better way to manage contents
